@@ -1,0 +1,713 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="Nafas : prototype de suivi entre les séances de psychothérapie. Données fictives uniquement.">
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Nafas V1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Arabic:wght@400;600&display=swap">
+<style>
+:root{
+  --ground:#F2F5F4; --surface:#FFFFFF; --sunk:#E6ECEA; --ink:#182624; --ink-2:#4A5B58; --ink-3:#7A8986;
+  --line:#D5DEDB; --accent:#2F6F73; --accent-ink:#FFFFFF; --accent-soft:#DCEBEA;
+  --good:#3C8A5A; --warn:#B7791F; --crit:#B4413C; --crit-soft:#F7E3E1; --warn-soft:#F6ECD9; --good-soft:#E0F0E6;
+  --sleep:#6B6FB3;
+  --display:"Bricolage Grotesque","IBM Plex Sans Arabic",ui-sans-serif,system-ui,sans-serif;
+  --body:"Figtree","IBM Plex Sans Arabic",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --ground:#101817; --surface:#18221F; --sunk:#1F2B28; --ink:#E4ECEA; --ink-2:#A9B8B5; --ink-3:#7C8C88;
+    --line:#2C3A37; --accent:#6FB3B5; --accent-ink:#0D1716; --accent-soft:#1F3634;
+    --good:#6CC08A; --warn:#E0A94F; --crit:#E57A73; --crit-soft:#3A2220; --warn-soft:#382D1A; --good-soft:#1C3325;
+    --sleep:#9EA2E6;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --ground:#101817; --surface:#18221F; --sunk:#1F2B28; --ink:#E4ECEA; --ink-2:#A9B8B5; --ink-3:#7C8C88;
+  --line:#2C3A37; --accent:#6FB3B5; --accent-ink:#0D1716; --accent-soft:#1F3634;
+  --good:#6CC08A; --warn:#E0A94F; --crit:#E57A73; --crit-soft:#3A2220; --warn-soft:#382D1A; --good-soft:#1C3325;
+  --sleep:#9EA2E6;
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;padding-inline:16px;padding-block:0 48px}
+.wrap{max-width:1000px;margin:0 auto}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-block:20px 10px}
+.brand{display:flex;align-items:baseline;gap:10px}
+.brand h1{font-family:var(--display);font-weight:700;font-size:28px;letter-spacing:-.02em;margin:0}
+.brand span{color:var(--ink-3);font-size:13px}
+.hright{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.demo-pill{font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;background:var(--warn-soft);color:var(--warn);padding:4px 10px;border-radius:999px}
+.lang{display:flex;background:var(--sunk);border-radius:999px;padding:3px}
+.lang button{border:0;background:transparent;color:var(--ink-2);font:600 13px var(--body);padding:5px 12px;border-radius:999px;cursor:pointer}
+.lang button[aria-pressed="true"]{background:var(--surface);color:var(--ink)}
+.disc{font-size:13px;color:var(--ink-2);border:1px solid var(--line);border-radius:10px;padding:8px 12px;background:var(--surface)}
+.disc b{color:var(--crit);font-family:var(--mono);font-weight:500}
+.danote{font-size:13px;color:var(--warn);background:var(--warn-soft);border-radius:10px;padding:8px 12px;margin-top:8px}
+nav.tabs{display:flex;gap:4px;background:var(--sunk);padding:4px;border-radius:12px;margin-block:12px 20px;overflow-x:auto}
+nav.tabs button{flex:1;white-space:nowrap;border:0;background:transparent;color:var(--ink-2);font:600 14px var(--body);padding:10px 14px;border-radius:9px;cursor:pointer}
+nav.tabs button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+nav.tabs .new{font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--accent);margin-inline-start:6px}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h2{font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:-.01em;margin:0 0 4px;text-wrap:balance}
+h3{font-family:var(--display);font-weight:500;font-size:17px;margin:0 0 10px}
+.sub{color:var(--ink-2);margin:0 0 18px;max-width:62ch}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px}
+.grid2{display:grid;grid-template-columns:1.25fr 1fr;gap:16px;align-items:start}
+.grid2>*{min-width:0}
+@media (max-width:760px){.grid2{grid-template-columns:1fr}}
+form.entry{display:grid;gap:22px}
+.field .q{display:block;font-weight:600;margin-bottom:8px}
+.hint{color:var(--ink-3);font-size:13px;font-weight:400}
+.scale{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}
+.scale input,.chips input,.yn input,.opts input{position:absolute;opacity:0;pointer-events:none}
+.scale label{display:grid;place-items:center;height:40px;border-radius:8px;background:var(--sunk);font:500 14px var(--mono);cursor:pointer;color:var(--ink-2);border:1px solid transparent}
+.scale input:checked + label{background:var(--accent);color:var(--accent-ink)}
+.scale-ends{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-3);margin-top:4px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+input[type=number],textarea{font:inherit;color:var(--ink);background:var(--ground);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+input[type=number]{width:110px;font-family:var(--mono)}
+textarea{width:100%;min-height:80px;resize:vertical}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chips label{padding:7px 12px;border-radius:999px;border:1px solid var(--line);cursor:pointer;font-size:14px;color:var(--ink-2)}
+.chips input:checked + label{background:var(--accent-soft);border-color:var(--accent);color:var(--ink)}
+.yn{display:flex;gap:6px;flex-wrap:wrap}
+.yn label{padding:8px 16px;border-radius:10px;border:1px solid var(--line);cursor:pointer}
+.yn input:checked + label{background:var(--accent-soft);border-color:var(--accent)}
+.scale input:focus-visible + label,.chips input:focus-visible + label,.yn input:focus-visible + label,.opts input:focus-visible + label{outline:2px solid var(--accent);outline-offset:2px}
+.btn{border:0;background:var(--accent);color:var(--accent-ink);font:600 15px var(--body);padding:12px 20px;border-radius:10px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+.btn.small{padding:7px 12px;font-size:13px}
+.btn.crit{background:var(--crit);color:#fff}
+.toast{font-size:14px;color:var(--good);font-weight:600}
+.crisis{background:var(--crit-soft);border:1px solid var(--crit);border-radius:12px;padding:16px;color:var(--ink)}
+.crisis strong{color:var(--crit)}
+.crisis ul{margin:8px 0 12px;padding-inline-start:18px;display:grid;gap:4px}
+.num{font-family:var(--mono);font-weight:500}
+.due{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--accent-soft);border-radius:12px;padding:12px 16px;margin-bottom:16px}
+.due p{margin:0;font-weight:600}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.kpi{background:var(--sunk);border-radius:10px;padding:12px}
+.kpi .k{font-size:12px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.05em}
+.kpi .v{font:500 22px var(--mono);font-variant-numeric:tabular-nums}
+.kpi .d{font-size:12px;color:var(--ink-2)}
+.chart{width:100%;overflow-x:auto}
+.chart svg{display:block;width:100%;height:auto;min-width:520px}
+.legend{display:flex;gap:16px;font-size:13px;color:var(--ink-2);margin-top:6px;flex-wrap:wrap}
+.legend i{display:inline-block;width:12px;height:3px;border-radius:2px;margin-inline-end:6px;vertical-align:middle}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:start;font-weight:600;color:var(--ink-3);font-size:12px;text-transform:uppercase;letter-spacing:.05em;padding:8px;border-bottom:1px solid var(--line)}
+td{padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+td.n{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.tbl{overflow-x:auto}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-inline-end:6px;vertical-align:middle}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.pill.crit{background:var(--crit-soft);color:var(--crit)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.good{background:var(--good-soft);color:var(--good)}
+.pill.mute{background:var(--sunk);color:var(--ink-2)}
+.patients{display:grid;gap:8px}
+.pt{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface);cursor:pointer;text-align:start;font:inherit;color:inherit;width:100%}
+.pt[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
+.pt .av{width:36px;height:36px;border-radius:50%;background:var(--accent-soft);display:grid;place-items:center;font-weight:600;color:var(--accent);font-size:13px}
+.pt .meta{font-size:13px;color:var(--ink-2)}
+.pt .sc{font:500 12px var(--mono);color:var(--ink-3);margin-inline-start:6px}
+.spark{width:90px;height:28px}
+#ptDetail .chart svg{min-width:0}
+.report{font-family:var(--mono);font-size:13px;white-space:pre-wrap;background:var(--sunk);border-radius:10px;padding:14px;max-height:420px;overflow:auto}
+.note{font-size:13px;color:var(--ink-3);margin-top:14px;max-width:70ch}
+.stack{display:grid;gap:16px}
+/* questionnaires */
+.seg{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.seg button{border:1px solid var(--line);background:var(--surface);color:var(--ink-2);font:600 14px var(--body);padding:8px 14px;border-radius:10px;cursor:pointer}
+.seg button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--ink)}
+.seg button small{display:block;font-weight:400;font-size:12px;color:var(--ink-3)}
+.qstem{margin:0 0 16px;color:var(--ink-2);font-style:italic}
+.qlist{display:grid;gap:20px}
+fieldset.qi{border:0;padding:0;margin:0;min-width:0}
+fieldset.qi legend{font-weight:600;margin-bottom:8px;display:flex;gap:10px;padding:0}
+.qn{flex:none;width:24px;height:24px;border-radius:50%;background:var(--sunk);display:grid;place-items:center;font:500 12px var(--mono);color:var(--ink-2)}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:6px;padding-inline-start:34px}
+.opts label{display:flex;flex-direction:column;gap:2px;padding:8px 10px;border-radius:10px;border:1px solid var(--line);cursor:pointer;font-size:13px;line-height:1.3;color:var(--ink-2);height:100%}
+.opts label .ov{font:500 12px var(--mono);color:var(--ink-3)}
+.opts input:checked + label{background:var(--accent-soft);border-color:var(--accent);color:var(--ink)}
+.opts input:checked + label .ov{color:var(--accent)}
+.scorebox{display:flex;align-items:center;gap:14px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:16px;margin-top:4px}
+.scorebox .big{font:500 28px var(--mono);font-variant-numeric:tabular-nums}
+.scorebox .big small{font-size:15px;color:var(--ink-3)}
+/* plan */
+.plan{display:grid;gap:18px}
+.pstep{display:grid;grid-template-columns:32px 1fr;gap:12px;align-items:start}
+.pstep .sn{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--accent);color:var(--accent);display:grid;place-items:center;font:500 14px var(--mono)}
+.pstep.reason .sn{background:var(--accent);color:var(--accent-ink);font-size:16px}
+.pstep label{display:block;font-weight:600;margin-bottom:2px}
+.pstep .hint{display:block;margin-bottom:6px}
+.ladder{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.ladder li{display:grid;grid-template-columns:24px 1fr;gap:10px;font-size:14px;color:var(--ink-2)}
+.ladder li span:first-child{font:500 12px var(--mono);color:var(--accent);padding-top:2px}
+footer{margin-top:32px;font-size:13px;color:var(--ink-3);max-width:75ch}
+footer p{margin:0 0 8px}
+[dir="rtl"] .scale-ends,[dir="rtl"] .row{direction:rtl}
+@media (prefers-reduced-motion:no-preference){nav.tabs button{transition:background .15s}}
+@media (max-width:480px){.kpis{grid-template-columns:1fr 1fr}.scale label{height:36px;font-size:13px}.opts{padding-inline-start:0}}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+<header class="top">
+  <div class="brand"><h1>Nafas</h1><span data-i18n="tagline">suivi entre séances</span></div>
+  <div class="hright">
+    <div class="lang" role="group" aria-label="Langue">
+      <button type="button" id="lang-fr" data-lang="fr" aria-pressed="true">Français</button>
+      <button type="button" id="lang-da" data-lang="da" aria-pressed="false">الدارجة</button>
+    </div>
+    <span class="demo-pill">Prototype V1 · données fictives</span>
+  </div>
+</header>
+
+<div class="disc" id="disc"><span data-i18n="disc">Nafas n'est pas un service d'urgence et ton praticien ne lit pas tes réponses en continu. En danger maintenant :</span> <b>141</b> · <b>19</b> · <b>112</b></div>
+<div class="danote" id="daNote" hidden>الترجمة للدارجة هنا مثال، خاصها تتصادق من عند مختصين. الاستبيانات (PHQ-9…) باقيين بالفرنسية حتى تكون نسخة بالدارجة مصادق عليها علميا.</div>
+
+<nav class="tabs" role="tablist" id="nav">
+  <button role="tab" id="tab-jour" aria-selected="true" data-view="jour"><span data-i18n="t_jour">Aujourd'hui</span></button>
+  <button role="tab" id="tab-q" aria-selected="false" data-view="q"><span data-i18n="t_q">Questionnaires</span><span class="new">V1</span></button>
+  <button role="tab" id="tab-plan" aria-selected="false" data-view="plan"><span data-i18n="t_plan">Plan de sécurité</span><span class="new">V1</span></button>
+  <button role="tab" id="tab-hist" aria-selected="false" data-view="hist"><span data-i18n="t_hist">Mon suivi</span></button>
+  <button role="tab" id="tab-rapport" aria-selected="false" data-view="rapport"><span data-i18n="t_rap">Rapport séance</span></button>
+  <button role="tab" id="tab-pro" aria-selected="false" data-view="pro"><span data-i18n="t_pro">Espace praticien</span></button>
+</nav>
+
+<!-- AUJOURD'HUI -->
+<section id="view-jour">
+  <div class="due" id="due" hidden>
+    <p><span data-i18n="due">Ton questionnaire de la semaine t'attend</span> <span class="hint" data-i18n="due_h">· 3 minutes</span></p>
+    <button class="btn small" type="button" data-go="q" data-i18n="due_btn">Répondre maintenant</button>
+  </div>
+  <h2 data-i18n="j_h">Comment s'est passée ta journée ?</h2>
+  <p class="sub" data-i18n="j_sub">Deux minutes, une fois par jour. Ton psychologue et ton psychiatre voient l'évolution, pas seulement ce dont tu te souviens le jour de la séance.</p>
+  <div class="grid2">
+    <form class="entry panel" id="entryForm" novalidate>
+      <div class="field">
+        <span class="q"><span data-i18n="q_mood">Humeur générale</span> <span class="hint" data-i18n="q_mood_h">· 1 = très mal, 10 = très bien</span></span>
+        <div class="scale" id="scaleMood"></div>
+        <div class="scale-ends"><span data-i18n="e_bad">Très mal</span><span data-i18n="e_good">Très bien</span></div>
+      </div>
+      <div class="field">
+        <span class="q"><span data-i18n="q_anx">Anxiété</span> <span class="hint" data-i18n="q_anx_h">· 1 = aucune, 10 = maximale</span></span>
+        <div class="scale" id="scaleAnx"></div>
+        <div class="scale-ends"><span data-i18n="e_calm">Calme</span><span data-i18n="e_max">Envahissante</span></div>
+      </div>
+      <div class="field">
+        <label class="q" for="sleep" data-i18n="q_sleep">Sommeil la nuit dernière</label>
+        <div class="row"><input type="number" id="sleep" min="0" max="16" step="0.5" value="7"> <span class="hint" data-i18n="hours">heures</span></div>
+      </div>
+      <div class="field">
+        <span class="q" data-i18n="q_med">Traitement pris comme prévu ?</span>
+        <div class="yn">
+          <input type="radio" name="med" id="med-oui" value="oui" checked><label for="med-oui" data-i18n="yes">Oui</label>
+          <input type="radio" name="med" id="med-non" value="non"><label for="med-non" data-i18n="no">Non</label>
+          <input type="radio" name="med" id="med-na" value="na"><label for="med-na" data-i18n="nomed">Pas de traitement</label>
+        </div>
+      </div>
+      <div class="field">
+        <span class="q"><span data-i18n="q_tags">Ce qui a pesé aujourd'hui</span> <span class="hint" data-i18n="opt">· facultatif</span></span>
+        <div class="chips" id="chips"></div>
+      </div>
+      <div class="field">
+        <span class="q" data-i18n="q_risk">As-tu eu des pensées de te faire du mal ou de ne plus vouloir vivre ?</span>
+        <div class="yn">
+          <input type="radio" name="risk" id="risk-non" value="non" checked><label for="risk-non" data-i18n="no2">Non</label>
+          <input type="radio" name="risk" id="risk-oui" value="oui"><label for="risk-oui" data-i18n="yes2">Oui</label>
+        </div>
+      </div>
+      <div class="crisis" id="crisis" hidden>
+        <strong data-i18n="c_t">Tu n'as pas à gérer ça seul(e). Si tu es en danger maintenant, appelle :</strong>
+        <ul>
+          <li><span class="num">141</span> — <span data-i18n="c_141">SAMU, urgences médicales</span></li>
+          <li><span class="num">15</span> — <span data-i18n="c_15">Protection civile</span></li>
+          <li><span class="num">19</span> — <span data-i18n="c_19">Police secours</span> · <span class="num">112</span> <span data-i18n="c_112">depuis un mobile</span></li>
+          <li><strong style="color:inherit">Stop Silence</strong> (Sourire de Reda) — <span data-i18n="c_ss">écoute par chat, gratuite et anonyme, en darija et en français :</span> <span class="num">stopsilence.net</span></li>
+          <li><span data-i18n="c_hop">Urgences psychiatriques 24h/24 : CHU Ibn Rochd (Casablanca), Hôpital Ar-Razi (Salé)</span></li>
+        </ul>
+        <button class="btn crit small" type="button" data-go="plan" data-i18n="c_plan">Ouvrir mon plan de sécurité</button>
+      </div>
+      <div class="field">
+        <label class="q" for="noteTxt" data-i18n="q_note">Une note pour ta prochaine séance</label>
+        <textarea id="noteTxt" data-i18n-ph="q_note_ph" placeholder="Ex. dispute avec ma sœur, difficile de me concentrer en cours…"></textarea>
+      </div>
+      <div class="row"><button class="btn" type="submit" data-i18n="save">Enregistrer ma journée</button><span class="toast" id="toast" role="status"></span></div>
+    </form>
+
+    <aside class="stack">
+      <div class="panel">
+        <h3 data-i18n="last7">Tes 7 derniers jours</h3>
+        <div class="kpis" id="kpis7"></div>
+        <div id="mini"></div>
+      </div>
+      <div class="panel">
+        <h3 data-i18n="why_h">Pourquoi ces questions ?</h3>
+        <p style="margin:0;color:var(--ink-2);font-size:14px" data-i18n="why">Humeur, anxiété et sommeil chaque jour ; un questionnaire validé (PHQ-9, GAD-7, WHO-5) chaque semaine. Le quotidien montre les variations, l'hebdomadaire donne un score que ton praticien peut comparer d'une semaine à l'autre.</p>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- QUESTIONNAIRES -->
+<section id="view-q" hidden>
+  <h2>Questionnaires de la semaine</h2>
+  <p class="sub">Des échelles validées, utilisées dans le monde entier. Elles servent au suivi et au dépistage, pas au diagnostic : c'est ton praticien qui interprète les scores.</p>
+  <div class="grid2">
+    <div class="panel">
+      <div class="seg" id="qSeg">
+        <button type="button" id="qs-phq" data-q="phq" aria-pressed="true">PHQ-9<small>Humeur · 9 questions</small></button>
+        <button type="button" id="qs-gad" data-q="gad" aria-pressed="false">GAD-7<small>Anxiété · 7 questions</small></button>
+        <button type="button" id="qs-who" data-q="who" aria-pressed="false">WHO-5<small>Bien-être · 5 questions</small></button>
+      </div>
+      <form id="qForm" novalidate>
+        <p class="qstem" id="qStem"></p>
+        <div class="qlist" id="qItems"></div>
+        <div class="crisis" id="qCrisis" hidden style="margin-top:18px"></div>
+        <div class="scorebox" style="margin-top:18px">
+          <div><div class="hint">Score</div><div class="big" id="qScore">—</div></div>
+          <span id="qSev"></span>
+          <span style="flex:1"></span>
+          <button class="btn" type="submit">Enregistrer mes réponses</button>
+        </div>
+        <p class="toast" id="qToast" role="status" style="margin:10px 0 0"></p>
+      </form>
+    </div>
+    <aside class="stack">
+      <div class="panel">
+        <h3>Mes derniers scores</h3>
+        <div class="tbl"><table><thead><tr><th>Date</th><th>Échelle</th><th>Score</th><th>Niveau</th></tr></thead><tbody id="qHist"></tbody></table></div>
+      </div>
+      <div class="panel">
+        <h3>À propos de ces échelles</h3>
+        <p style="margin:0 0 8px;color:var(--ink-2);font-size:14px"><strong>PHQ-9</strong> et <strong>GAD-7</strong> : domaine public (Pfizer), libres à traduire et à utiliser. <strong>WHO-5</strong> : OMS, gratuit avec attribution.</p>
+        <p style="margin:0;color:var(--ink-2);font-size:14px">Les formulations sont celles des versions françaises publiées. Une version darija devra faire l'objet d'une étude de validation avant usage clinique.</p>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- PLAN -->
+<section id="view-plan" hidden>
+  <h2 data-i18n="p_h">Mon plan de sécurité</h2>
+  <p class="sub" data-i18n="p_sub">À remplir avec ton praticien, en séance. Il reste disponible sur ton téléphone même sans connexion, pour les moments où c'est difficile de réfléchir. On le suit dans l'ordre : on passe à l'étape suivante si la précédente ne suffit pas.</p>
+  <div class="grid2">
+    <form class="panel plan" id="planForm" novalidate></form>
+    <aside class="stack">
+      <div class="panel">
+        <h3 data-i18n="p_st">État du plan</h3>
+        <p id="planStatus" style="margin:0;font-size:14px;color:var(--ink-2)"></p>
+      </div>
+      <div class="panel">
+        <h3 data-i18n="p_how">Comment l'utiliser</h3>
+        <ol class="ladder" id="ladder"></ol>
+        <p class="note" style="margin-top:12px">Modèle Stanley-Brown. Dans un essai sur 1 640 patients, ce plan associé à un suivi téléphonique a réduit de 45 % les comportements suicidaires sur 6 mois.</p>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- HISTORIQUE -->
+<section id="view-hist" hidden>
+  <h2>Mon suivi</h2>
+  <p class="sub">Les 30 jours précédents sont un exemple généré pour la démonstration. Tes propres saisies s'ajoutent à la fin.</p>
+  <div class="panel stack">
+    <h3 style="margin:0">Scores hebdomadaires</h3>
+    <div class="chart" id="scoreChart"></div>
+    <div class="legend"><span><i style="background:var(--accent)"></i>PHQ-9 (humeur, sur 27)</span><span><i style="background:var(--warn)"></i>GAD-7 (anxiété, sur 21)</span><span>Lignes pointillées : seuils 10 et 15 (modéré, modérément sévère)</span></div>
+  </div>
+  <div class="panel stack" style="margin-top:16px">
+    <h3 style="margin:0">Journal quotidien · 30 jours</h3>
+    <div class="kpis" id="kpis30"></div>
+    <div class="chart" id="chart30"></div>
+    <div class="legend"><span><i style="background:var(--accent)"></i>Humeur</span><span><i style="background:var(--warn)"></i>Anxiété</span><span><i style="background:var(--sleep)"></i>Sommeil (h)</span><span><span class="dot" style="background:var(--crit)"></span>Traitement non pris</span></div>
+  </div>
+  <div class="panel" style="margin-top:16px">
+    <h3>Journal</h3>
+    <div class="tbl"><table><thead><tr><th>Date</th><th>Humeur</th><th>Anxiété</th><th>Sommeil</th><th>Traitement</th><th>Note</th></tr></thead><tbody id="journal"></tbody></table></div>
+  </div>
+</section>
+
+<!-- RAPPORT -->
+<section id="view-rapport" hidden>
+  <h2>Rapport pour la prochaine séance</h2>
+  <p class="sub">Un résumé des 14 derniers jours avec les derniers scores, prêt à montrer à ton praticien.</p>
+  <div class="panel stack">
+    <div class="report" id="reportTxt"></div>
+    <div class="row"><button class="btn" id="copyBtn" type="button">Copier le résumé</button><span class="toast" id="copyToast" role="status"></span></div>
+  </div>
+</section>
+
+<!-- PRO -->
+<section id="view-pro" hidden>
+  <h2>Espace praticien</h2>
+  <p class="sub">Vue côté psychologue ou psychiatre. Patients fictifs, triés par niveau de risque : idées noires (quotidien ou question 9 du PHQ-9) en premier, puis scores sévères, traitement irrégulier et aggravations.</p>
+  <div class="grid2">
+    <div class="patients" id="patients"></div>
+    <div class="panel" id="ptDetail"></div>
+  </div>
+</section>
+
+<footer>
+  <p><strong>Prototype V1.</strong> Tes saisies restent dans ce navigateur, rien n'est envoyé. Ne pas utiliser avec de vrais patients : une version réelle exige une autorisation préalable de la CNDP (loi 09-08, données de santé) et un hébergement au Maroc.</p>
+  <p>Les ressources de crise sont à revérifier une par une avant le pilote. Le 0801 000 180 parfois présenté comme ligne d'écoute est le Centre antipoison : il n'apparaît pas ici.</p>
+</footer>
+</div>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s);
+const DAY=86400000;
+const fmt=d=>new Date(d).toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'});
+const fmtS=d=>new Date(d).toLocaleDateString('fr-FR',{day:'numeric',month:'short'});
+const iso=d=>new Date(d).toISOString().slice(0,10);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const avg=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:0;
+const f1=n=>n.toFixed(1).replace('.',',');
+function esc(t){return String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function rng(seed){let s=seed;return()=>{s=(s*9301+49297)%233280;return s/233280}}
+function load(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+function store(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+
+/* ---------- i18n ---------- */
+const TAGS_FR=["Fac / examens","Famille","Relations","Argent","Solitude","Santé physique","Travail","Rien de particulier"];
+const TAGS_DA=["القراية / الامتحانات","العائلة","العلاقات","الفلوس","الوحدة","الصحة","الخدمة","والو بالضبط"];
+const DA={
+  tagline:"التتبع بين الجلسات",
+  disc:"نفس ماشي خدمة ديال المستعجلات، والمعالج ديالك ما كيقراش الأجوبة ديالك فكل وقت. إلا كنتي فخطر دابا:",
+  t_jour:"اليوم",t_q:"الاستبيانات",t_plan:"خطة الأمان",t_hist:"التتبع ديالي",t_rap:"تقرير الجلسة",t_pro:"فضاء المعالج",
+  due:"الاستبيان ديال السيمانة كيتسناك",due_h:"· 3 دقايق",due_btn:"جاوب دابا",
+  j_h:"كيف داز نهارك؟",j_sub:"دقيقتين، مرة فالنهار. المعالج ديالك كيشوف التطور، ماشي غير اللي كتفكر نهار الجلسة.",
+  q_mood:"المزاج ديالك",q_mood_h:"· 1 = خايب بزاف، 10 = مزيان بزاف",e_bad:"خايب بزاف",e_good:"مزيان بزاف",
+  q_anx:"القلق",q_anx_h:"· 1 = والو، 10 = بزاف بزاف",e_calm:"هاني",e_max:"مخنوق",
+  q_sleep:"شحال نعستي البارح؟",hours:"ساعات",q_med:"خديتي الدوا ديالك كيف خاصك؟",yes:"إيه",no:"لا",nomed:"ما عنديش دوا",
+  q_tags:"شنو اللي تقل عليك اليوم؟",opt:"· اختياري",
+  q_risk:"واش جاوك شي أفكار باش تأذي راسك ولا ما بقيتيش باغي تعيش؟",no2:"لا",yes2:"إيه",
+  c_t:"ماشي بوحدك. إلا كنتي فخطر دابا، عيط ل:",c_141:"SAMU، الإسعاف",c_15:"الوقاية المدنية",c_19:"البوليس",c_112:"من البورطابل",
+  c_ss:"هضرة بالشات، فابور وبلا سمية، بالدارجة وبالفرنسية:",c_hop:"مستعجلات الطب النفسي 24/24: مستشفى ابن رشد (كازا)، مستشفى الرازي (سلا)",c_plan:"حل خطة الأمان ديالي",
+  q_note:"شي حاجة بغيتي تقولها فالجلسة الجاية",q_note_ph:"مثلا: تخاصمت مع ختي، صعيب عليا نركز فالقراية…",save:"سجّل نهاري",
+  last7:"آخر 7 أيام",why_h:"علاش هاد الأسئلة؟",why:"المزاج والقلق والنعاس كل نهار، واستبيان معروف علميا كل سيمانة. اليومي كيبين التغييرات، والأسبوعي كيعطي نقطة اللي المعالج يقدر يقارنها من سيمانة لسيمانة.",
+  p_h:"خطة الأمان ديالي",p_sub:"كتعمرها مع المعالج ديالك فالجلسة. كتبقى فالتيليفون حتى بلا أنترنيت، للوقت اللي كيولي صعيب تفكر فيه. كتبعها بالترتيب: إلا ما كفاتش خطوة، دوز للي من بعدها.",
+  p_st:"حالة الخطة",p_how:"كيفاش نستعملها",p_save:"سجّل الخطة"
+};
+const FR={};let lang=load('nafas-lang','fr');
+function T(k){return lang==='da'&&DA[k]?DA[k]:FR[k]}
+function applyLang(){
+  document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.dataset.i18n;if(!(k in FR))FR[k]=el.textContent;el.textContent=T(k)});
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{const k=el.dataset.i18nPh;if(!(k in FR))FR[k]=el.placeholder;el.placeholder=T(k)});
+  const rtl=lang==='da';
+  ['#nav','#disc','#view-jour','#view-plan','.brand'].forEach(s=>{const el=$(s);el.dir=rtl?'rtl':'ltr';el.lang=rtl?'ar-MA':'fr'});
+  $('#daNote').hidden=!rtl;
+  const tags=rtl?TAGS_DA:TAGS_FR;document.querySelectorAll('#chips label').forEach((l,i)=>l.textContent=tags[i]);
+  document.querySelectorAll('.lang button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===lang));
+  buildPlan();
+}
+document.querySelectorAll('.lang button').forEach(b=>b.onclick=()=>{lang=b.dataset.lang;store('nafas-lang',lang);applyLang();renderAll()});
+
+/* ---------- questionnaires ---------- */
+const QDEF={
+  phq:{name:'PHQ-9',full:'humeur',max:27,stem:"Au cours des 2 dernières semaines, selon quelle fréquence avez-vous été gêné(e) par les problèmes suivants ?",
+    opts:['Jamais','Plusieurs jours','Plus de la moitié du temps','Presque tous les jours'],
+    items:["Peu d'intérêt ou de plaisir à faire les choses","Être triste, déprimé(e) ou désespéré(e)","Difficultés à s'endormir ou à rester endormi(e), ou dormir trop","Se sentir fatigué(e) ou manquer d'énergie","Avoir peu d'appétit ou manger trop","Avoir une mauvaise opinion de soi-même, ou avoir le sentiment d'être nul(le), ou d'avoir déçu sa famille ou s'être déçu(e) soi-même","Avoir du mal à se concentrer, par exemple pour lire le journal ou regarder la télévision","Bouger ou parler si lentement que les autres auraient pu le remarquer, ou au contraire être si agité(e) que vous avez eu du mal à tenir en place","Penser qu'il vaudrait mieux mourir ou envisager de vous faire du mal d'une manière ou d'une autre"]},
+  gad:{name:'GAD-7',full:'anxiété',max:21,stem:"Au cours des 2 dernières semaines, à quelle fréquence avez-vous été dérangé(e) par les problèmes suivants ?",
+    opts:['Jamais','Plusieurs jours','Plus de la moitié du temps','Presque tous les jours'],
+    items:["Sentiment de nervosité, d'anxiété ou de tension","Incapacité à arrêter de s'inquiéter ou à contrôler ses inquiétudes","Inquiétudes excessives à propos de tout et de rien","Difficulté à se détendre","Agitation telle qu'il est difficile de tenir en place","Tendance à être facilement contrarié(e) ou irritable","Sentiment de peur comme si quelque chose de terrible risquait de se produire"]},
+  who:{name:'WHO-5',full:'bien-être',max:100,mult:4,stem:"Au cours des 2 dernières semaines :",
+    opts:['Jamais','De temps en temps','Moins de la moitié du temps','Plus de la moitié du temps','La plupart du temps','Tout le temps'],
+    items:["Je me suis senti(e) bien et de bonne humeur","Je me suis senti(e) calme et tranquille","Je me suis senti(e) plein(e) d'énergie et vigoureux(se)","Je me suis réveillé(e) en me sentant frais/fraîche et dispos(e)","Ma vie quotidienne a été remplie de choses intéressantes"]}
+};
+const qScore=r=>r.items.reduce((a,b)=>a+b,0)*(QDEF[r.type].mult||1);
+function sev(type,s){
+  if(type==='phq')return s<5?['Minimal','good']:s<10?['Léger','good']:s<15?['Modéré','warn']:s<20?['Modérément sévère','crit']:['Sévère','crit'];
+  if(type==='gad')return s<5?['Minimal','good']:s<10?['Léger','good']:s<15?['Modéré','warn']:['Sévère','crit'];
+  return s>50?['Bien-être correct','good']:s>28?['Bien-être faible','warn']:['Très faible, à évaluer','crit'];
+}
+const byType=(qs,t)=>qs.filter(r=>r.type===t).sort((a,b)=>a.date<b.date?-1:1);
+
+/* ---------- demo data ---------- */
+function makeSeries(seed,base,trend,opts={}){
+  const r=rng(seed),out=[],today=new Date();today.setHours(12,0,0,0);
+  for(let i=30;i>=1;i--){
+    const t=(30-i)/29,noise=(r()-.5)*2.4;
+    const mood=Math.round(clamp(base+trend*t+noise+(opts.dip&&i<=opts.dip?-3:0),1,10));
+    const anx=Math.round(clamp(11-mood+(r()-.5)*2,1,10));
+    const sleep=Math.round(clamp(6+(mood-5)*.35+(r()-.5)*2,3,10)*2)/2;
+    const med=opts.nomed?(r()<opts.nomed?'non':'oui'):(r()<.08?'non':'oui');
+    const risk=opts.risk&&i<=opts.risk?'oui':'non';
+    out.push({date:iso(today.getTime()-i*DAY),mood,anx,sleep,med,risk,tags:[TAGS_FR[Math.floor(r()*7)]],note:'',demo:true});
+  }
+  return out;
+}
+function dist(total,n,max){const a=Array(n).fill(0);let t=total,i=0;while(t>0&&a.some(v=>v<max)){if(a[i%n]<max){a[i%n]++;t--}i++}return a}
+function makeWeekly(series,seed,opt={}){
+  const r=rng(seed),out=[],n=series.length,days=opt.days||[29,22,15,8];
+  days.forEach((ago,k)=>{
+    const idx=clamp(n-ago,0,n-1),w=series.slice(Math.max(0,idx-6),idx+1);
+    const m=avg(w.map(e=>e.mood)),a=avg(w.map(e=>e.anx)),date=series[idx].date,last=k===days.length-1;
+    const phq=dist(clamp(Math.round((10-m)*2.4+(r()-.5)*3),0,24),8,3);phq.push(last&&opt.item9?opt.item9:0);
+    out.push({date,type:'phq',items:phq,demo:true});
+    out.push({date,type:'gad',items:dist(clamp(Math.round((a-1)*2.1+(r()-.5)*3),0,21),7,3),demo:true});
+    out.push({date,type:'who',items:dist(clamp(Math.round(m*2.3+(r()-.5)*3),0,25),5,5),demo:true});
+  });
+  return out;
+}
+const DEMO_ME=makeSeries(7,4.5,2.2);
+DEMO_ME[DEMO_ME.length-9].note="Partiel de stats, très stressé(e), mal dormi.";
+DEMO_ME[DEMO_ME.length-4].note="Bonne journée, sortie avec des amis.";
+const DEMO_ME_Q=makeWeekly(DEMO_ME,11);
+
+let mine=load('nafas-entries',[]),myQs=load('nafas-q',[]);
+function mySeries(){const m=new Map(DEMO_ME.map(e=>[e.date,e]));mine.forEach(e=>m.set(e.date,e));return[...m.values()].sort((a,b)=>a.date<b.date?-1:1)}
+function myQ(){const m=new Map(DEMO_ME_Q.map(r=>[r.type+r.date,r]));myQs.forEach(r=>m.set(r.type+r.date,r));return[...m.values()]}
+const loadPlan=()=>load('nafas-plan',null);
+
+/* ---------- daily form ---------- */
+function buildScale(el,name,def){for(let i=1;i<=10;i++){const id=name+'-'+i;el.insertAdjacentHTML('beforeend',`<input type="radio" name="${name}" id="${id}" value="${i}" ${i===def?'checked':''}><label for="${id}">${i}</label>`)}}
+buildScale($('#scaleMood'),'mood',6);buildScale($('#scaleAnx'),'anx',4);
+TAGS_FR.forEach((t,i)=>$('#chips').insertAdjacentHTML('beforeend',`<input type="checkbox" id="tag-${i}" value="${t}"><label for="tag-${i}">${t}</label>`));
+document.querySelectorAll('input[name=risk]').forEach(r=>r.addEventListener('change',()=>{$('#crisis').hidden=document.querySelector('input[name=risk]:checked').value!=='oui'}));
+$('#entryForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const v=n=>document.querySelector(`input[name=${n}]:checked`).value,sleep=parseFloat($('#sleep').value);
+  if(isNaN(sleep)||sleep<0||sleep>16){$('#toast').style.color='var(--crit)';$('#toast').textContent="Indique un sommeil entre 0 et 16 heures.";return}
+  const entry={date:iso(Date.now()),mood:+v('mood'),anx:+v('anx'),sleep,med:v('med'),risk:v('risk'),
+    tags:[...document.querySelectorAll('#chips input:checked')].map(c=>c.value),note:$('#noteTxt').value.trim(),demo:false};
+  mine=mine.filter(x=>x.date!==entry.date);mine.push(entry);store('nafas-entries',mine);
+  $('#toast').style.color='var(--good)';
+  $('#toast').textContent=lang==='da'?'تسجل.':(entry.risk==='oui'?"Enregistré. Les numéros ci-dessus sont là si besoin.":"Journée enregistrée.");
+  renderAll();
+});
+document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g)show(g.dataset.go)});
+
+/* ---------- questionnaire form ---------- */
+let qType='phq';
+function buildQ(){
+  const d=QDEF[qType];
+  document.querySelectorAll('#qSeg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.q===qType));
+  $('#qStem').textContent=d.stem;
+  $('#qItems').innerHTML=d.items.map((it,i)=>`<fieldset class="qi"><legend><span class="qn">${i+1}</span><span>${it}</span></legend><div class="opts">${d.opts.map((o,v)=>`<input type="radio" name="qi${i}" id="qi${i}-${v}" value="${v}"><label for="qi${i}-${v}"><span class="ov">${v}</span>${o}</label>`).join('')}</div></fieldset>`).join('');
+  $('#qCrisis').hidden=true;$('#qToast').textContent='';liveQ();
+}
+function answers(){const d=QDEF[qType];return d.items.map((_,i)=>{const c=document.querySelector(`input[name=qi${i}]:checked`);return c?+c.value:null})}
+function liveQ(){
+  const a=answers(),d=QDEF[qType],done=a.filter(x=>x!==null).length;
+  if(done<a.length){$('#qScore').innerHTML=`${done}<small> / ${a.length} réponses</small>`;$('#qSev').innerHTML=''}
+  else{const s=qScore({type:qType,items:a}),[t,c]=sev(qType,s);$('#qScore').innerHTML=`${s}<small> / ${d.max}</small>`;$('#qSev').innerHTML=`<span class="pill ${c}">${t}</span>`}
+  const risk=qType==='phq'&&a[8]>0;$('#qCrisis').hidden=!risk;
+  if(risk)$('#qCrisis').innerHTML=$('#crisis').innerHTML;
+}
+$('#qForm').addEventListener('change',liveQ);
+document.querySelectorAll('#qSeg button').forEach(b=>b.onclick=()=>{qType=b.dataset.q;buildQ()});
+$('#qForm').addEventListener('submit',e=>{
+  e.preventDefault();const a=answers(),miss=a.filter(x=>x===null).length;
+  if(miss){$('#qToast').style.color='var(--crit)';$('#qToast').textContent=`Il manque ${miss} réponse${miss>1?'s':''} pour calculer le score.`;return}
+  const rec={date:iso(Date.now()),type:qType,items:a,demo:false};
+  myQs=myQs.filter(r=>!(r.type===rec.type&&r.date===rec.date));myQs.push(rec);store('nafas-q',myQs);
+  $('#qToast').style.color='var(--good)';
+  $('#qToast').textContent=`${QDEF[qType].name} enregistré : ${qScore(rec)} / ${QDEF[qType].max}.`+(qType==='phq'&&a[8]>0?" Ta réponse à la question 9 apparaîtra en priorité chez ton praticien.":"");
+  renderQHist();renderDue();
+});
+function renderQHist(){
+  const rows=myQ().sort((a,b)=>a.date<b.date?1:a.date>b.date?-1:a.type<b.type?-1:1).slice(0,9);
+  $('#qHist').innerHTML=rows.map(r=>{const s=qScore(r),[t,c]=sev(r.type,s);return`<tr><td>${fmtS(r.date)}${r.demo?'':' <span class="pill good">toi</span>'}</td><td>${QDEF[r.type].name}</td><td class="n">${s}/${QDEF[r.type].max}</td><td><span class="pill ${c}">${t}</span></td></tr>`}).join('');
+}
+function renderDue(){const l=byType(myQ(),'phq').at(-1);$('#due').hidden=!!l&&(Date.now()-Date.parse(l.date))<6.5*DAY}
+
+/* ---------- safety plan ---------- */
+const PLAN=[
+  {k:'r',n:'♥',fr:["Ce qui compte pour moi","Les personnes, projets ou choses qui me donnent envie de continuer.","Ex. ma petite sœur, finir ma licence, le voyage à Chefchaouen…"],da:["شنو اللي مهم عندي","الناس ولا الحوايج اللي كيخليوني باغي نكمل.","مثلا: ختي الصغيرة، نكمل الإجازة…"]},
+  {k:'1',n:'1',fr:["Mes signes d'alerte","Pensées, sensations ou situations qui annoncent que ça commence à aller mal.","Ex. je m'isole dans ma chambre, je ne dors plus, je me dis que je suis un poids…"],da:["العلامات ديال الخطر","الأفكار ولا الحالات اللي كتبين بلي بديت نطيح.","مثلا: كنسد على راسي، ما كنعسش…"]},
+  {k:'2',n:'2',fr:["Ce que je peux faire seul(e) pour me calmer","Sans contacter personne.","Ex. marcher 20 minutes, douche, respiration 4-7-8, prier, écouter une playlist…"],da:["شنو نقدر ندير بوحدي باش نهدن","بلا ما نعيط لحد.","مثلا: نتمشى، ندوش، نصلي، نسمع شي موسيقى…"]},
+  {k:'3',n:'3',fr:["Des personnes et des lieux qui me changent les idées","Pas forcément pour parler du problème, juste pour ne pas rester seul(e).","Ex. café avec Imane, la bibliothèque de la fac, chez mes cousins…"],da:["ناس وبلايص كيبدلو ليا الجو","ماشي ضروري نهضر على المشكل.","مثلا: قهوة مع صاحبتي، المكتبة ديال الفاك…"]},
+  {k:'4',n:'4',fr:["Les personnes à qui je peux demander de l'aide","Nom et numéro de proches à qui je peux dire que ça ne va pas.","Ex. Maman · 06 … ; Karim · 06 …"],da:["الناس اللي نقدر نطلب منهم المساعدة","السمية والنمرة.","مثلا: ماما · 06 …"]},
+  {k:'5',n:'5',fr:["Professionnels et urgences","Mon psychologue, mon psychiatre, et les numéros d'urgence.",""],da:["المختصين والمستعجلات","المعالج ديالي، الطبيب، ونمر المستعجلات.",""]},
+  {k:'6',n:'6',fr:["Rendre mon environnement plus sûr","Ce que je fais, avec qui, pour éloigner ce qui pourrait me servir à me faire du mal.","Ex. confier mes médicaments à ma mère, qui me les donne jour par jour…"],da:["نخلي المحيط ديالي آمن","شنو ندير ومع من باش نبعد الحوايج الخطيرة.","مثلا: نعطي الدوا لماما وهي تعطيني كل نهار ديالو…"]},
+];
+const PLAN5_DEFAULT="SAMU 141 · Police 19 · 112 depuis un mobile\nStop Silence (chat, darija / français) : stopsilence.net\nMon psychologue : \nMon psychiatre : ";
+function buildPlan(){
+  const p=loadPlan(),f=(p&&p.f)||{},L=lang==='da'?'da':'fr';
+  const cur={};document.querySelectorAll('#planForm textarea').forEach(t=>cur[t.dataset.k]=t.value);
+  $('#planForm').innerHTML=PLAN.map(s=>{const [t,h,ph]=s[L];const val=(s.k in cur)?cur[s.k]:(f[s.k]!=null?f[s.k]:(s.k==='5'?PLAN5_DEFAULT:''));
+    return`<div class="pstep${s.k==='r'?' reason':''}"><span class="sn" aria-hidden="true">${s.n}</span><div><label for="plan-${s.k}">${t}</label><span class="hint">${h}</span><textarea id="plan-${s.k}" data-k="${s.k}" placeholder="${esc(ph)}">${esc(val)}</textarea></div></div>`}).join('')
+    +`<div class="row"><button class="btn" type="submit">${L==='da'?DA.p_save:'Enregistrer mon plan'}</button><span class="toast" id="planToast" role="status"></span></div>`;
+  $('#ladder').innerHTML=PLAN.slice(1).map(s=>`<li><span>${s.n}</span><span>${s[L][0]}</span></li>`).join('');
+  renderPlanStatus();
+}
+$('#planForm').addEventListener('submit',e=>{
+  e.preventDefault();const f={};document.querySelectorAll('#planForm textarea').forEach(t=>f[t.dataset.k]=t.value.trim());
+  store('nafas-plan',{f,date:iso(Date.now())});$('#planToast').textContent=lang==='da'?'تسجلات الخطة.':'Plan enregistré.';renderPlanStatus();
+});
+function planFilled(p){if(!p)return 0;return PLAN.filter(s=>p.f[s.k]&&p.f[s.k]!==PLAN5_DEFAULT.trim()).length}
+function renderPlanStatus(){
+  const p=loadPlan(),n=planFilled(p);
+  $('#planStatus').innerHTML=p?`<span class="pill ${n>=6?'good':'warn'}">${n} / 7 rubriques remplies</span><br><span style="display:inline-block;margin-top:8px">Mis à jour le ${fmt(p.date)}. Ton praticien voit s'il est rempli, pas son contenu, sauf si tu le partages en séance.</span>`
+    :`<span class="pill warn">Pas encore enregistré</span><br><span style="display:inline-block;margin-top:8px">Les exemples en gris montrent quoi écrire. Le mieux est de le remplir en séance avec ton praticien.</span>`;
+}
+
+/* ---------- charts ---------- */
+function kpis(el,s,prev){
+  const m=avg(s.map(e=>e.mood)),a=avg(s.map(e=>e.anx)),sl=avg(s.map(e=>e.sleep));
+  const pm=prev&&prev.length?avg(prev.map(e=>e.mood)):null;
+  const delta=pm===null?'':(m-pm>=0?'▲ ':'▼ ')+f1(Math.abs(m-pm))+' vs période préc.';
+  el.innerHTML=`<div class="kpi"><div class="k">Humeur moy.</div><div class="v">${f1(m)}</div><div class="d">${delta||'&nbsp;'}</div></div>
+  <div class="kpi"><div class="k">Anxiété moy.</div><div class="v">${f1(a)}</div><div class="d">&nbsp;</div></div>
+  <div class="kpi"><div class="k">Sommeil moy.</div><div class="v">${f1(sl)} h</div><div class="d">${s.filter(e=>e.med==='non').length} oubli(s) traitement</div></div>`;
+}
+function chart(s,{h=240,compact=false,W=760}={}){
+  const H=h,pl=40,pr=44,pt=12,pb=compact?10:30,n=s.length,x=i=>pl+(n<=1?0:i*(W-pl-pr)/(n-1));
+  const y=v=>pt+(10-v)*(H-pt-pb)/9,ys=v=>pt+(12-v)*(H-pt-pb)/12;
+  const path=(k,fy)=>s.map((e,i)=>(i?'L':'M')+x(i).toFixed(1)+','+fy(e[k]).toFixed(1)).join('');
+  let g='';
+  if(!compact){
+    [1,4,7,10].forEach(v=>{g+=`<line x1="${pl}" x2="${W-pr}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)" stroke-width="1"/><text x="${pl-8}" y="${y(v)+4}" text-anchor="end" font-size="14" fill="var(--ink-3)" font-family="IBM Plex Mono,monospace">${v}</text>`});
+    [0,6,12].forEach(v=>{g+=`<text x="${W-pr+8}" y="${ys(v)+4}" font-size="14" fill="var(--sleep)" font-family="IBM Plex Mono,monospace">${v}h</text>`});
+    s.forEach((e,i)=>{if(i%5===0||i===n-1)g+=`<text x="${x(i)}" y="${H-8}" text-anchor="middle" font-size="14" fill="var(--ink-3)">${fmtS(e.date)}</text>`});
+  }
+  g+=`<path d="${path('mood',y)}L${x(n-1)},${y(1)}L${x(0)},${y(1)}Z" fill="var(--accent)" fill-opacity=".10"/>`;
+  g+=`<path d="${path('sleep',ys)}" fill="none" stroke="var(--sleep)" stroke-width="1.6" stroke-dasharray="4 4"/>`;
+  g+=`<path d="${path('anx',y)}" fill="none" stroke="var(--warn)" stroke-width="1.8"/>`;
+  g+=`<path d="${path('mood',y)}" fill="none" stroke="var(--accent)" stroke-width="2.6" stroke-linejoin="round"/>`;
+  s.forEach((e,i)=>{if(e.med==='non')g+=`<circle cx="${x(i)}" cy="${y(1)}" r="4" fill="var(--crit)"/>`;if(e.risk==='oui')g+=`<circle cx="${x(i)}" cy="${y(e.mood)}" r="5" fill="none" stroke="var(--crit)" stroke-width="2"/>`});
+  const L=s[n-1];g+=`<circle cx="${x(n-1)}" cy="${y(L.mood)}" r="5" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/>`;
+  return`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Évolution humeur, anxiété et sommeil">${g}</svg>`;
+}
+function scoreChart(qs,{h=220,W=760}={}){
+  const P=byType(qs,'phq'),G=byType(qs,'gad');if(!P.length)return'<p class="note">Pas encore de questionnaire.</p>';
+  const ts=[...P,...G].map(r=>Date.parse(r.date));let t0=Math.min(...ts),t1=Math.max(...ts);if(t1===t0){t0-=3*DAY;t1+=3*DAY}
+  const H=h,pl=40,pr=40,pt=22,pb=30,x=t=>pl+(t-t0)/(t1-t0)*(W-pl-pr),y=v=>pt+(27-v)*(H-pt-pb)/27;
+  let g='';
+  [0,9,18,27].forEach(v=>{g+=`<line x1="${pl}" x2="${W-pr}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)" stroke-width="1"/><text x="${pl-8}" y="${y(v)+4}" text-anchor="end" font-size="13" fill="var(--ink-3)" font-family="IBM Plex Mono,monospace">${v}</text>`});
+  [10,15].forEach(v=>{g+=`<line x1="${pl}" x2="${W-pr}" y1="${y(v)}" y2="${y(v)}" stroke="var(--crit)" stroke-opacity=".45" stroke-width="1" stroke-dasharray="3 5"/>`});
+  const line=(R,col,w,below)=>{const pts=R.map(r=>[x(Date.parse(r.date)),y(qScore(r)),qScore(r)]);
+    let s=`<path d="${pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+','+p[1].toFixed(1)).join('')}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linejoin="round"/>`;
+    pts.forEach(p=>{s+=`<circle cx="${p[0]}" cy="${p[1]}" r="4.5" fill="${col}" stroke="var(--surface)" stroke-width="2"/><text x="${p[0]}" y="${below?p[1]+20:p[1]-10}" text-anchor="middle" font-size="13" fill="${col}" font-family="IBM Plex Mono,monospace">${p[2]}</text>`});return s};
+  g+=line(G,'var(--warn)',1.8,true)+line(P,'var(--accent)',2.6,false);
+  P.forEach(r=>{g+=`<text x="${x(Date.parse(r.date))}" y="${H-8}" text-anchor="middle" font-size="13" fill="var(--ink-3)">${fmtS(r.date)}</text>`});
+  P.forEach(r=>{if(r.items[8]>0)g+=`<circle cx="${x(Date.parse(r.date))}" cy="${y(qScore(r))}" r="9" fill="none" stroke="var(--crit)" stroke-width="2"/>`});
+  return`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Scores PHQ-9 et GAD-7 par semaine">${g}</svg>`;
+}
+function spark(s){
+  const W=90,H=28,n=s.length,x=i=>i*(W-4)/(n-1)+2,y=v=>2+(10-v)*(H-4)/9;
+  return`<svg class="spark" viewBox="0 0 ${W} ${H}"><path d="${s.map((e,i)=>(i?'L':'M')+x(i).toFixed(1)+','+y(e.mood).toFixed(1)).join('')}" fill="none" stroke="var(--accent)" stroke-width="1.6"/><circle cx="${x(n-1)}" cy="${y(s[n-1].mood)}" r="2.5" fill="var(--accent)"/></svg>`;
+}
+
+/* ---------- report ---------- */
+function reportText(p){
+  const s=p.s,P=s.slice(-14),Q=s.slice(-28,-14),m=avg(P.map(e=>e.mood)),mq=avg(Q.map(e=>e.mood));
+  const worst=P.reduce((a,b)=>b.mood<a.mood?b:a),best=P.reduce((a,b)=>b.mood>a.mood?b:a);
+  const tc={};P.forEach(e=>e.tags.forEach(t=>tc[t]=(tc[t]||0)+1));
+  const top=Object.entries(tc).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([t,c])=>`${t} (${c} j)`).join(', ');
+  const notes=P.filter(e=>e.note).map(e=>`  · ${fmt(e.date)} : ${e.note}`).join('\n')||'  (aucune)';
+  const risks=P.filter(e=>e.risk==='oui');
+  const qline=t=>{const R=byType(p.q,t),l=R.at(-1),pr=R.at(-2);if(!l)return`${QDEF[t].name.padEnd(7)} —`;const s=qScore(l);
+    return`${QDEF[t].name.padEnd(7)} ${String(s).padStart(3)}/${QDEF[t].max}  ${sev(t,s)[0]}${pr?`  (préc. ${qScore(pr)})`:''}  · ${fmtS(l.date)}`};
+  const lp=byType(p.q,'phq').at(-1),i9=lp?lp.items[8]:0,pf=planFilled(p.plan);
+  return`RÉSUMÉ DE SUIVI · ${p.name}
+Période : ${fmt(P[0].date)} → ${fmt(P[P.length-1].date)} (${P.length} jours)
+
+QUESTIONNAIRES (dernier score)
+${qline('phq')}
+${qline('gad')}
+${qline('who')}
+PHQ-9 q.9  ${i9?`${i9} — « ${QDEF.phq.opts[i9]} »  ⚠ À ÉVALUER EN PRIORITÉ`:'0 — Jamais'}
+
+JOURNAL QUOTIDIEN
+Humeur moyenne     ${f1(m)}/10  (${m>=mq?'+':'−'}${f1(Math.abs(m-mq))} vs 14 j précédents)
+Anxiété moyenne    ${f1(avg(P.map(e=>e.anx)))}/10
+Sommeil moyen      ${f1(avg(P.map(e=>e.sleep)))} h
+Traitement         ${P.filter(e=>e.med==='non').length} oubli(s) sur ${P.filter(e=>e.med!=='na').length} jours
+Idées noires       ${risks.length?risks.length+' jour(s) : '+risks.map(e=>fmt(e.date)).join(', '):'aucune signalée'}
+Jour le plus bas   ${fmt(worst.date)} (humeur ${worst.mood})
+Jour le plus haut  ${fmt(best.date)} (humeur ${best.mood})
+Facteurs fréquents ${top||'—'}
+
+Plan de sécurité   ${p.plan?`${pf}/7 rubriques, mis à jour le ${fmtS(p.plan.date)}`:'pas encore rempli'}
+
+Notes du patient :
+${notes}`;
+}
+
+/* ---------- views ---------- */
+function renderJour(){const s=mySeries();kpis($('#kpis7'),s.slice(-7),s.slice(-14,-7));$('#mini').innerHTML=`<div class="chart">${chart(s.slice(-7),{h:120,compact:true})}</div>`;$('#mini svg').style.minWidth='0';renderDue()}
+function renderQ(){if(!$('#qItems').children.length)buildQ();renderQHist()}
+function renderPlanV(){renderPlanStatus()}
+function renderHist(){
+  const s=mySeries();$('#scoreChart').innerHTML=scoreChart(myQ());kpis($('#kpis30'),s.slice(-30),null);$('#chart30').innerHTML=chart(s.slice(-31));
+  $('#journal').innerHTML=s.slice().reverse().map(e=>`<tr><td>${fmt(e.date)}${e.demo?'':' <span class="pill good">toi</span>'}</td><td class="n">${e.mood}</td><td class="n">${e.anx}</td><td class="n">${f1(e.sleep)} h</td><td>${e.med==='oui'?'Pris':e.med==='non'?'<span class="pill crit">Non pris</span>':'—'}</td><td>${e.risk==='oui'?'<span class="pill crit">Idées noires</span> ':''}${esc(e.note||e.tags.join(', '))}</td></tr>`).join('');
+}
+const ME={id:'me',name:'Vous (démo)',ini:'V',age:'19 ans',motif:'Anxiété, sommeil',get s(){return mySeries()},get q(){return myQ()},get plan(){return loadPlan()}};
+function renderRapport(){$('#reportTxt').textContent=reportText(ME)}
+$('#copyBtn').addEventListener('click',()=>{
+  const t=$('#reportTxt').textContent,done=()=>$('#copyToast').textContent="Copié.";
+  const fb=()=>{const r=document.createRange();r.selectNodeContents($('#reportTxt'));const s=getSelection();s.removeAllRanges();s.addRange(r);$('#copyToast').textContent="Texte sélectionné, copie-le avec Ctrl+C.";};
+  try{navigator.clipboard.writeText(t).then(done,fb)}catch(e){fb()}
+});
+
+/* ---------- praticien ---------- */
+const Ys=makeSeries(21,5,-1.5,{dip:3,risk:1}),Os=makeSeries(33,6,0,{nomed:.3}),Ss=makeSeries(45,4,3),Hs=makeSeries(58,6.5,-2.6);
+const PATIENTS=[ME,
+  {id:'y',name:'Yasmine B.',ini:'YB',age:'24 ans',motif:'Épisode dépressif, sous ISRS',s:Ys,q:makeWeekly(Ys,5,{days:[28,21,14,2],item9:1}),plan:{f:{r:'x','1':'x','2':'x','3':'x','4':'x','5':'x','6':'x'},date:iso(Date.now()-20*DAY)}},
+  {id:'o',name:'Omar T.',ini:'OT',age:'31 ans',motif:'Trouble bipolaire type II',s:Os,q:makeWeekly(Os,9),plan:null},
+  {id:'h',name:'Hamza E.',ini:'HE',age:'27 ans',motif:'Trouble anxieux généralisé',s:Hs,q:makeWeekly(Hs,13,{days:[27,20,13,3]}),plan:{f:{r:'x','1':'x','2':'x','5':'x'},date:iso(Date.now()-40*DAY)}},
+  {id:'s',name:'Salma K.',ini:'SK',age:'17 ans · suivi parental',motif:'Phobie scolaire',s:Ss,q:makeWeekly(Ss,17,{days:[27,20,13,6]}),plan:null},
+];
+function status(p){
+  const s=p.s,l=s.slice(-3),P=byType(p.q,'phq'),lp=P.at(-1),pp=P.at(-2),recent=lp&&(Date.now()-Date.parse(lp.date))<8*DAY;
+  if(l.some(e=>e.risk==='oui')||(recent&&lp.items[8]>0))return{cls:'crit',t:'Idées noires signalées',rank:0};
+  if(l.slice(-2).every(e=>e.mood<=3))return{cls:'crit',t:'Humeur très basse 2 j',rank:1};
+  if(lp&&qScore(lp)>=20)return{cls:'crit',t:'PHQ-9 sévère',rank:1};
+  if(s.slice(-7).filter(e=>e.med==='non').length>=2)return{cls:'warn',t:'Traitement irrégulier',rank:2};
+  if(lp&&pp&&qScore(lp)-qScore(pp)>=5)return{cls:'warn',t:`PHQ-9 en hausse (+${qScore(lp)-qScore(pp)})`,rank:3};
+  if(avg(s.slice(-7).map(e=>e.mood))-avg(s.slice(-14,-7).map(e=>e.mood))<=-1.5)return{cls:'warn',t:'Humeur en baisse',rank:3};
+  return{cls:'good',t:'Stable',rank:4};
+}
+let sel=null;
+function lastScore(p,t){const l=byType(p.q,t).at(-1);return l?qScore(l):'—'}
+function renderPro(){
+  const list=PATIENTS.map(p=>({p,st:status(p)})).sort((a,b)=>a.st.rank-b.st.rank);
+  if(!sel)sel=list[0].p.id;
+  $('#patients').innerHTML=list.map(({p,st})=>`<button class="pt" data-id="${p.id}" aria-pressed="${p.id===sel}"><span class="av">${p.ini}</span><span><strong>${p.name}</strong><span class="sc">PHQ ${lastScore(p,'phq')} · GAD ${lastScore(p,'gad')}</span><div class="meta">${p.motif}</div><span class="pill ${st.cls}">${st.t}</span></span>${spark(p.s.slice(-14))}</button>`).join('');
+  document.querySelectorAll('.pt').forEach(b=>b.onclick=()=>{sel=b.dataset.id;renderPro()});
+  const p=PATIENTS.find(x=>x.id===sel),st=status(p),last=p.s[p.s.length-1],pf=planFilled(p.plan);
+  const chip=t=>{const v=lastScore(p,t);if(v==='—')return'';const [lab,c]=sev(t,v);return`<span class="pill ${c}">${QDEF[t].name} ${v} · ${lab}</span>`};
+  $('#ptDetail').innerHTML=`<h3>${p.name} <span style="color:var(--ink-3);font-size:14px">· ${p.age}</span></h3>
+  <p style="margin:0 0 10px;color:var(--ink-2);font-size:14px">${p.motif} · dernière saisie ${fmt(last.date)}</p>
+  <div class="row" style="gap:6px;margin-bottom:12px"><span class="pill ${st.cls}">${st.t}</span>${chip('phq')}${chip('gad')}${chip('who')}<span class="pill ${p.plan?(pf>=6?'good':'warn'):'mute'}">Plan de sécurité : ${p.plan?pf+'/7':'absent'}</span></div>
+  ${st.rank===0?`<div class="crisis" style="margin-bottom:12px"><strong>Action attendue :</strong> contacter le patient aujourd'hui selon le protocole convenu, et revoir son plan de sécurité. Dans la vraie version : notification au praticien et trace de la prise en charge.</div>`:''}
+  ${!p.plan?`<p class="note" style="margin:0 0 12px">Pas de plan de sécurité : à construire à la prochaine séance.</p>`:''}
+  <h3 style="font-size:15px;margin-top:4px">Scores hebdomadaires</h3>
+  <div class="chart">${scoreChart(p.q,{h:200,W:480})}</div>
+  <h3 style="font-size:15px;margin-top:14px">14 derniers jours</h3>
+  <div class="kpis" id="ptK"></div>
+  <div class="chart">${chart(p.s.slice(-14),{h:220,W:480})}</div>
+  <div class="report" style="margin-top:12px;max-height:260px">${esc(reportText(p))}</div>`;
+  kpis($('#ptK'),p.s.slice(-7),p.s.slice(-14,-7));
+}
+
+/* ---------- tabs ---------- */
+const views={jour:renderJour,q:renderQ,plan:renderPlanV,hist:renderHist,rapport:renderRapport,pro:renderPro};
+let cur='jour';
+function show(v){cur=v;document.querySelectorAll('nav.tabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.view===v));
+  Object.keys(views).forEach(k=>$('#view-'+k).hidden=k!==v);views[v]();store('nafas-tab',v);window.scrollTo(0,0)}
+document.querySelectorAll('nav.tabs button').forEach(b=>b.onclick=()=>show(b.dataset.view));
+function renderAll(){views[cur]()}
+applyLang();
+const h=location.hash.slice(1);let start=load('nafas-tab','jour');if(views[h])start=h;if(!views[start])start='jour';
+show(start);
+})();
+</script>
+
+</body>
+</html>
