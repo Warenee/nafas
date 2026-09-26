@@ -90,6 +90,18 @@ textarea{width:100%;min-height:80px;resize:vertical}
 .btn.small{padding:7px 12px;font-size:13px}
 .btn.crit{background:var(--crit);color:#fff}
 .toast{font-size:14px;color:var(--good);font-weight:600}
+/* Lien « Aller au contenu » : invisible jusqu'à ce qu'on arrive dessus au clavier */
+.skip{position:absolute;inset-inline-start:-9999px;top:var(--sp-2);z-index:10;background:var(--surface);color:var(--ink);border:2px solid var(--accent);border-radius:var(--r-s);padding:var(--sp-2) var(--sp-3);font-weight:600}
+.skip:focus{inset-inline-start:var(--sp-4)}
+main:focus{outline:none}
+/* État vide : même apparence partout */
+.empty{padding:var(--sp-5) var(--sp-4);text-align:center;color:var(--ink-2);background:var(--sunk);border-radius:var(--r-m);font-size:14px}
+/* Question du questionnaire sans réponse */
+fieldset.qi legend{flex-wrap:wrap}
+fieldset.qi legend>span:nth-child(2){flex:1;min-width:0}
+.qmiss{flex-basis:100%;padding-inline-start:34px;color:var(--crit);font-weight:600;font-size:13px}
+fieldset.qi[data-missing] .opts label{border-color:var(--crit)}
+.save-note{margin:0;font-size:13px;color:var(--ink-3)}
 .crisis{background:var(--crit-soft);border:1px solid var(--crit);border-radius:12px;padding:16px;color:var(--ink)}
 .crisis strong{color:var(--crit)}
 .crisis ul{margin:8px 0 12px;padding-inline-start:18px;display:grid;gap:4px}
@@ -110,7 +122,9 @@ table{width:100%;border-collapse:collapse;font-size:14px}
 th{text-align:start;font-weight:600;color:var(--ink-3);font-size:12px;text-transform:uppercase;letter-spacing:.05em;padding:8px;border-bottom:1px solid var(--line)}
 td{padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:top}
 td.n{font-family:var(--mono);font-variant-numeric:tabular-nums}
-.tbl{overflow-x:auto}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r-m);background:var(--surface)}
+.tbl tbody tr:last-child td{border-bottom:0}
+td.n{text-align:end}
 .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-inline-end:6px;vertical-align:middle}
 .pill{display:inline-block;font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;white-space:nowrap}
 .pill.crit{background:var(--crit-soft);color:var(--crit)}
@@ -177,6 +191,7 @@ footer p{margin:0 0 8px}
 </style>
 </head>
 <body>
+<a class="skip" href="#main">Aller au contenu</a>
 
 
 <div class="wrap">
@@ -207,6 +222,8 @@ footer p{margin:0 0 8px}
   <button role="tab" id="tab-rapport" aria-selected="false" data-view="rapport"><span data-i18n="t_rap">Rapport séance</span></button>
   <button role="tab" id="tab-pro" aria-selected="false" data-view="pro"><span data-i18n="t_pro">Espace praticien</span></button>
 </nav>
+
+<main id="main" tabindex="-1">
 
 <!-- AUJOURD'HUI -->
 <section id="view-jour">
@@ -266,6 +283,7 @@ footer p{margin:0 0 8px}
         <textarea id="noteTxt" data-i18n-ph="q_note_ph" placeholder="Ex. dispute avec ma sœur, difficile de me concentrer en cours…"></textarea>
       </div>
       <div class="row"><button class="btn" type="submit" data-i18n="save">Enregistrer ma journée</button><span class="toast" id="toast" role="status"></span></div>
+      <p class="save-note" data-i18n="save_note">Tes réponses restent sur cet appareil : rien n'est envoyé.</p>
     </form>
 
     <aside class="stack">
@@ -380,6 +398,8 @@ footer p{margin:0 0 8px}
     <div class="panel" id="ptDetail"></div>
   </div>
 </section>
+
+</main>
 
 <footer>
   <p>Contact : <a href="mailto:rayanemoutaki1@gmail.com">rayanemoutaki1@gmail.com</a> · Retours bienvenus.</p>
@@ -534,12 +554,13 @@ function buildQ(){
   const d=QDEF[qType];
   document.querySelectorAll('#qSeg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.q===qType));
   $('#qStem').textContent=d.stem;
-  $('#qItems').innerHTML=d.items.map((it,i)=>`<fieldset class="qi"><legend><span class="qn">${i+1}</span><span>${it}</span></legend><div class="opts">${d.opts.map((o,v)=>`<input type="radio" name="qi${i}" id="qi${i}-${v}" value="${v}"><label for="qi${i}-${v}"><span class="ov">${v}</span>${o}</label>`).join('')}</div></fieldset>`).join('');
+  $('#qItems').innerHTML=d.items.map((it,i)=>`<fieldset class="qi"><legend><span class="qn">${i+1}</span><span>${it}</span><span class="qmiss" id="qmiss${i}" hidden>Réponse manquante</span></legend><div class="opts">${d.opts.map((o,v)=>`<input type="radio" name="qi${i}" id="qi${i}-${v}" value="${v}"><label for="qi${i}-${v}"><span class="ov">${v}</span>${o}</label>`).join('')}</div></fieldset>`).join('');
   $('#qCrisis').hidden=true;$('#qToast').textContent='';liveQ();
 }
 function answers(){const d=QDEF[qType];return d.items.map((_,i)=>{const c=document.querySelector(`input[name=qi${i}]:checked`);return c?+c.value:null})}
+function markMissing(a,show){a.forEach((x,i)=>{const fs=document.querySelectorAll('#qItems fieldset.qi')[i],m=$('#qmiss'+i);if(!fs)return;const miss=x===null&&(show||fs.hasAttribute('data-missing'));fs.toggleAttribute('data-missing',miss);m.hidden=!miss;if(miss)fs.setAttribute('aria-describedby','qmiss'+i);else fs.removeAttribute('aria-describedby')})}
 function liveQ(){
-  const a=answers(),d=QDEF[qType],done=a.filter(x=>x!==null).length;
+  const a=answers(),d=QDEF[qType],done=a.filter(x=>x!==null).length;markMissing(a,false);
   if(done<a.length){$('#qScore').innerHTML=`${done}<small> / ${a.length} réponses</small>`;$('#qSev').innerHTML=''}
   else{const s=qScore({type:qType,items:a}),[t,c]=sev(qType,s);$('#qScore').innerHTML=`${s}<small> / ${d.max}</small>`;$('#qSev').innerHTML=`<span class="pill ${c}">${t}</span>`}
   const risk=qType==='phq'&&a[8]>0;$('#qCrisis').hidden=!risk;
@@ -549,7 +570,7 @@ $('#qForm').addEventListener('change',liveQ);
 document.querySelectorAll('#qSeg button').forEach(b=>b.onclick=()=>{qType=b.dataset.q;buildQ()});
 $('#qForm').addEventListener('submit',e=>{
   e.preventDefault();const a=answers(),miss=a.filter(x=>x===null).length;
-  if(miss){$('#qToast').style.color='var(--crit)';$('#qToast').textContent=`Il manque ${miss} réponse${miss>1?'s':''} pour calculer le score.`;document.querySelector(`input[name=qi${a.indexOf(null)}]`).focus();return}
+  if(miss){markMissing(a,true);$('#qToast').style.color='var(--crit)';$('#qToast').textContent=`Il manque ${miss} réponse${miss>1?'s':''} pour calculer le score.`;document.querySelector(`input[name=qi${a.indexOf(null)}]`).focus();return}
   const rec={date:iso(Date.now()),type:qType,items:a,demo:false};
   const next=myQs.filter(r=>!(r.type===rec.type&&r.date===rec.date)).concat(rec);
   if(!store('nafas-q',next)){$('#qToast').style.color='var(--crit)';$('#qToast').textContent=SAVE_FAIL;return}
@@ -560,7 +581,7 @@ $('#qForm').addEventListener('submit',e=>{
 });
 function renderQHist(){
   const rows=myQ().sort((a,b)=>a.date<b.date?1:a.date>b.date?-1:a.type<b.type?-1:1).slice(0,9);
-  $('#qHist').innerHTML=rows.map(r=>{const s=qScore(r),[t,c]=sev(r.type,s);return`<tr><td>${fmtS(r.date)}${r.demo?'':' <span class="pill good">toi</span>'}</td><td>${QDEF[r.type].name}</td><td class="n">${s}/${QDEF[r.type].max}</td><td><span class="pill ${c}">${t}</span></td></tr>`}).join('');
+  $('#qHist').innerHTML=rows.length?rows.map(r=>{const s=qScore(r),[t,c]=sev(r.type,s);return`<tr><td>${fmtS(r.date)}${r.demo?'':' <span class="pill good">toi</span>'}</td><td>${QDEF[r.type].name}</td><td class="n">${s}/${QDEF[r.type].max}</td><td><span class="pill ${c}">${t}</span></td></tr>`}).join(''):'<tr><td colspan="4" class="empty">Aucun score pour l\'instant.</td></tr>';
 }
 function renderDue(){const l=byType(myQ(),'phq').at(-1);$('#due').hidden=!!l&&(Date.now()-Date.parse(l.date))<6.5*DAY}
 
@@ -631,7 +652,7 @@ function chart(s,{h=240,compact=false,W=760}={}){
   return`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Évolution humeur, anxiété et sommeil">${g}</svg>`;
 }
 function scoreChart(qs,{h=220,W=760}={}){
-  const P=byType(qs,'phq'),G=byType(qs,'gad');if(!P.length)return'<p class="note">Pas encore de questionnaire.</p>';
+  const P=byType(qs,'phq'),G=byType(qs,'gad');if(!P.length)return'<p class="empty">Pas encore de questionnaire. Les scores apparaîtront ici après le premier.</p>';
   const ts=[...P,...G].map(r=>Date.parse(r.date));let t0=Math.min(...ts),t1=Math.max(...ts);if(t1===t0){t0-=3*DAY;t1+=3*DAY}
   const H=h,pl=40,pr=40,pt=22,pb=30,x=t=>pl+(t-t0)/(t1-t0)*(W-pl-pr),y=v=>pt+(27-v)*(H-pt-pb)/27;
   let g='';
