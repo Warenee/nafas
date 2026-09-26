@@ -7,34 +7,39 @@
 <meta name="description" content="Nafas : prototype de suivi entre les séances de psychothérapie. Données fictives uniquement.">
 <style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Nafas V1</title>
+<script>/* Thème choisi, appliqué avant l'affichage pour éviter un flash de l'autre thème. Sinon : réglage du téléphone. */try{var t=JSON.parse(localStorage.getItem('nafas-theme'));if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch(e){}</script>
 <style>
 :root{
-  --ground:#F2F5F4; --surface:#FFFFFF; --sunk:#E6ECEA; --ink:#182624; --ink-2:#4A5B58; --ink-3:#7A8986;
-  --line:#D5DEDB; --accent:#2F6F73; --accent-ink:#FFFFFF; --accent-soft:#DCEBEA;
-  --good:#3C8A5A; --warn:#B7791F; --crit:#B4413C; --crit-soft:#F7E3E1; --warn-soft:#F6ECD9; --good-soft:#E0F0E6;
+  --ground:#F2F5F4; --surface:#FFFFFF; --sunk:#E6ECEA; --ink:#182624; --ink-2:#4A5B58; --ink-3:#5A6966;
+  --line:#D5DEDB; --field-line:#7F8D8A; --accent:#2F6F73; --accent-ink:#FFFFFF; --accent-soft:#DCEBEA;
+  --good:#2B6B45; --warn:#8A5710; --crit:#A3352F; --crit-soft:#F7E3E1; --warn-soft:#F6ECD9; --good-soft:#E0F0E6;
   --sleep:#6B6FB3;
-  --display:"Bricolage Grotesque","IBM Plex Sans Arabic",ui-sans-serif,system-ui,sans-serif;
-  --body:"Figtree","IBM Plex Sans Arabic",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
-  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  /* Polices du téléphone uniquement (aucune requête externe depuis la PR #15). */
+  --display:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Arabic","Geeza Pro",sans-serif;
+  --body:var(--display);
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  /* Espacements (grille de 4 px), rayons, cible tactile, durée d'animation */
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px;
+  --r-s:8px; --r-m:12px; --r-l:16px; --tap:44px; --dur:.15s;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     color-scheme:dark;
-    --ground:#101817; --surface:#18221F; --sunk:#1F2B28; --ink:#E4ECEA; --ink-2:#A9B8B5; --ink-3:#7C8C88;
-    --line:#2C3A37; --accent:#6FB3B5; --accent-ink:#0D1716; --accent-soft:#1F3634;
+    --ground:#101817; --surface:#18221F; --sunk:#1F2B28; --ink:#E4ECEA; --ink-2:#A9B8B5; --ink-3:#8FA09C;
+    --line:#2C3A37; --field-line:#667873; --accent:#6FB3B5; --accent-ink:#0D1716; --accent-soft:#1F3634;
     --good:#6CC08A; --warn:#E0A94F; --crit:#E57A73; --crit-soft:#3A2220; --warn-soft:#382D1A; --good-soft:#1C3325;
     --sleep:#9EA2E6;
   }
 }
 :root[data-theme="dark"]{
   color-scheme:dark;
-  --ground:#101817; --surface:#18221F; --sunk:#1F2B28; --ink:#E4ECEA; --ink-2:#A9B8B5; --ink-3:#7C8C88;
-  --line:#2C3A37; --accent:#6FB3B5; --accent-ink:#0D1716; --accent-soft:#1F3634;
+  --ground:#101817; --surface:#18221F; --sunk:#1F2B28; --ink:#E4ECEA; --ink-2:#A9B8B5; --ink-3:#8FA09C;
+  --line:#2C3A37; --field-line:#667873; --accent:#6FB3B5; --accent-ink:#0D1716; --accent-soft:#1F3634;
   --good:#6CC08A; --warn:#E0A94F; --crit:#E57A73; --crit-soft:#3A2220; --warn-soft:#382D1A; --good-soft:#1C3325;
   --sleep:#9EA2E6;
 }
 *{box-sizing:border-box}
-body{background:var(--ground);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;padding-inline:16px;padding-block:0 48px}
+body{background:var(--ground);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;padding-inline:16px;padding-block:0 48px}
 .wrap{max-width:1000px;margin:0 auto}
 header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-block:20px 10px}
 .brand{display:flex;align-items:baseline;gap:10px}
@@ -52,11 +57,11 @@ nav.tabs{display:flex;gap:4px;background:var(--sunk);padding:4px;border-radius:1
 nav.tabs button{flex:1;white-space:nowrap;border:0;background:transparent;color:var(--ink-2);font:600 14px var(--body);padding:10px 14px;border-radius:9px;cursor:pointer}
 nav.tabs button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
 nav.tabs .new{font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--accent);margin-inline-start:6px}
-button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-h2{font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:-.01em;margin:0 0 4px;text-wrap:balance}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h2{font-family:var(--display);font-weight:700;font-size:24px;letter-spacing:-.01em;margin:0 0 4px;text-wrap:balance}
 h3{font-family:var(--display);font-weight:500;font-size:17px;margin:0 0 10px}
 .sub{color:var(--ink-2);margin:0 0 18px;max-width:62ch}
-.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);padding:var(--sp-5)}
 .grid2{display:grid;grid-template-columns:1.25fr 1fr;gap:16px;align-items:start}
 .grid2>*{min-width:0}
 @media (max-width:760px){.grid2{grid-template-columns:1fr}}
@@ -69,14 +74,15 @@ form.entry{display:grid;gap:22px}
 .scale input:checked + label{background:var(--accent);color:var(--accent-ink)}
 .scale-ends{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-3);margin-top:4px}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-input[type=number],textarea{font:inherit;color:var(--ink);background:var(--ground);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+input[type=number],textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--ground);border:1px solid var(--field-line);border-radius:10px;padding:10px 12px}
+input[aria-invalid="true"],textarea[aria-invalid="true"]{border-color:var(--crit);box-shadow:0 0 0 1px var(--crit)}
 input[type=number]{width:110px;font-family:var(--mono)}
 textarea{width:100%;min-height:80px;resize:vertical}
 .chips{display:flex;gap:6px;flex-wrap:wrap}
-.chips label{padding:7px 12px;border-radius:999px;border:1px solid var(--line);cursor:pointer;font-size:14px;color:var(--ink-2)}
+.chips label{padding:7px 12px;border-radius:999px;border:1px solid var(--field-line);cursor:pointer;font-size:14px;color:var(--ink-2)}
 .chips input:checked + label{background:var(--accent-soft);border-color:var(--accent);color:var(--ink)}
 .yn{display:flex;gap:6px;flex-wrap:wrap}
-.yn label{padding:8px 16px;border-radius:10px;border:1px solid var(--line);cursor:pointer}
+.yn label{padding:8px 16px;border-radius:10px;border:1px solid var(--field-line);cursor:pointer}
 .yn input:checked + label{background:var(--accent-soft);border-color:var(--accent)}
 .scale input:focus-visible + label,.chips input:focus-visible + label,.yn input:focus-visible + label,.opts input:focus-visible + label{outline:2px solid var(--accent);outline-offset:2px}
 .btn{border:0;background:var(--accent);color:var(--accent-ink);font:600 15px var(--body);padding:12px 20px;border-radius:10px;cursor:pointer}
@@ -87,6 +93,7 @@ textarea{width:100%;min-height:80px;resize:vertical}
 .crisis{background:var(--crit-soft);border:1px solid var(--crit);border-radius:12px;padding:16px;color:var(--ink)}
 .crisis strong{color:var(--crit)}
 .crisis ul{margin:8px 0 12px;padding-inline-start:18px;display:grid;gap:4px}
+.crisis .note{color:var(--ink-2)}
 .num{font-family:var(--mono);font-weight:500}
 .due{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--accent-soft);border-radius:12px;padding:12px 16px;margin-bottom:16px}
 .due p{margin:0;font-weight:600}
@@ -95,7 +102,7 @@ textarea{width:100%;min-height:80px;resize:vertical}
 .kpi .k{font-size:12px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.05em}
 .kpi .v{font:500 22px var(--mono);font-variant-numeric:tabular-nums}
 .kpi .d{font-size:12px;color:var(--ink-2)}
-.chart{width:100%;overflow-x:auto}
+.chart{width:100%;overflow-x:auto;padding-bottom:12px}
 .chart svg{display:block;width:100%;height:auto;min-width:520px}
 .legend{display:flex;gap:16px;font-size:13px;color:var(--ink-2);margin-top:6px;flex-wrap:wrap}
 .legend i{display:inline-block;width:12px;height:3px;border-radius:2px;margin-inline-end:6px;vertical-align:middle}
@@ -112,7 +119,14 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums}
 .pill.mute{background:var(--sunk);color:var(--ink-2)}
 .patients{display:grid;gap:8px}
 .pt{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface);cursor:pointer;text-align:start;font:inherit;color:inherit;width:100%}
-.pt[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
+.pt[data-st="crit"]{border-inline-start:4px solid var(--crit)}
+.pt[data-st="warn"]{border-inline-start:4px solid var(--warn)}
+.pt[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.pt[aria-pressed="true"][data-st="crit"]{border-inline-start-color:var(--crit)}
+.pt[aria-pressed="true"][data-st="warn"]{border-inline-start-color:var(--warn)}
+.grid2.pro-grid{grid-template-columns:minmax(300px,1fr) 1.35fr}
+@media (max-width:760px){.grid2.pro-grid{grid-template-columns:1fr}}
+@media (min-width:761px){#ptDetail{position:sticky;top:var(--sp-3);max-height:calc(100vh - 2*var(--sp-3));overflow:auto}}
 .pt .av{width:36px;height:36px;border-radius:50%;background:var(--accent-soft);display:grid;place-items:center;font-weight:600;color:var(--accent);font-size:13px}
 .pt .meta{font-size:13px;color:var(--ink-2)}
 .pt .sc{font:500 12px var(--mono);color:var(--ink-3);margin-inline-start:6px}
@@ -121,9 +135,10 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums}
 .report{font-family:var(--mono);font-size:13px;white-space:pre-wrap;background:var(--sunk);border-radius:10px;padding:14px;max-height:420px;overflow:auto}
 .note{font-size:13px;color:var(--ink-3);margin-top:14px;max-width:70ch}
 .stack{display:grid;gap:16px}
+.stack>*{min-width:0}
 /* questionnaires */
 .seg{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
-.seg button{border:1px solid var(--line);background:var(--surface);color:var(--ink-2);font:600 14px var(--body);padding:8px 14px;border-radius:10px;cursor:pointer}
+.seg button{border:1px solid var(--field-line);background:var(--surface);color:var(--ink-2);font:600 14px var(--body);padding:8px 14px;border-radius:10px;cursor:pointer}
 .seg button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--ink)}
 .seg button small{display:block;font-weight:400;font-size:12px;color:var(--ink-3)}
 .qstem{margin:0 0 16px;color:var(--ink-2);font-style:italic}
@@ -132,7 +147,7 @@ fieldset.qi{border:0;padding:0;margin:0;min-width:0}
 fieldset.qi legend{font-weight:600;margin-bottom:8px;display:flex;gap:10px;padding:0}
 .qn{flex:none;width:24px;height:24px;border-radius:50%;background:var(--sunk);display:grid;place-items:center;font:500 12px var(--mono);color:var(--ink-2)}
 .opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:6px;padding-inline-start:34px}
-.opts label{display:flex;flex-direction:column;gap:2px;padding:8px 10px;border-radius:10px;border:1px solid var(--line);cursor:pointer;font-size:13px;line-height:1.3;color:var(--ink-2);height:100%}
+.opts label{display:flex;flex-direction:column;gap:2px;padding:8px 10px;border-radius:10px;border:1px solid var(--field-line);cursor:pointer;font-size:13px;line-height:1.3;color:var(--ink-2);height:100%}
 .opts label .ov{font:500 12px var(--mono);color:var(--ink-3)}
 .opts input:checked + label{background:var(--accent-soft);border-color:var(--accent);color:var(--ink)}
 .opts input:checked + label .ov{color:var(--accent)}
@@ -152,8 +167,13 @@ fieldset.qi legend{font-weight:600;margin-bottom:8px;display:flex;gap:10px;paddi
 footer{margin-top:32px;font-size:13px;color:var(--ink-3);max-width:75ch}
 footer p{margin:0 0 8px}
 [dir="rtl"] .scale-ends,[dir="rtl"] .row{direction:rtl}
-@media (prefers-reduced-motion:no-preference){nav.tabs button{transition:background .15s}}
+/* Mouvement doux, seulement si la personne ne l'a pas désactivé. L'encadré de crise apparaît sans animation. */
+@media (prefers-reduced-motion:no-preference){nav.tabs button,.lang button,.btn,.scale label,.chips label,.yn label,.opts label,.seg button,.pt{transition:background-color var(--dur),border-color var(--dur),box-shadow var(--dur),color var(--dur)}}
+/* Cibles tactiles d'au moins 44 px sur écran tactile */
+@media (pointer:coarse){.lang button,.btn.small,.chips label,.yn label,.seg button,nav.tabs button{min-height:var(--tap);display:inline-flex;align-items:center;justify-content:center}.seg button{flex-direction:column}}
+@media (max-width:480px){.panel{padding:var(--sp-4)}h2{font-size:22px}}
 @media (max-width:480px){.kpis{grid-template-columns:1fr 1fr}.scale label{height:36px;font-size:13px}.opts{padding-inline-start:0}}
+@media (pointer:coarse){.scale label{height:var(--tap)}}
 </style>
 </head>
 <body>
@@ -166,6 +186,11 @@ footer p{margin:0 0 8px}
     <div class="lang" role="group" aria-label="Langue">
       <button type="button" id="lang-fr" data-lang="fr" aria-pressed="true">Français</button>
       <button type="button" id="lang-da" data-lang="da" aria-pressed="false">الدارجة</button>
+    </div>
+    <div class="lang" role="group" aria-label="Thème" id="theme">
+      <button type="button" data-theme-set="auto" aria-pressed="true" title="Suit le réglage du téléphone">Auto</button>
+      <button type="button" data-theme-set="light" aria-pressed="false">Clair</button>
+      <button type="button" data-theme-set="dark" aria-pressed="false">Sombre</button>
     </div>
     <span class="demo-pill">Prototype V1 · démo par rayane</span>
   </div>
@@ -350,7 +375,7 @@ footer p{margin:0 0 8px}
 <section id="view-pro" hidden>
   <h2>Espace praticien</h2>
   <p class="sub">Vue côté psychologue ou psychiatre. Patients fictifs, triés par niveau de risque : idées noires (quotidien ou question 9 du PHQ-9) en premier, puis scores sévères, traitement irrégulier et aggravations.</p>
-  <div class="grid2">
+  <div class="grid2 pro-grid">
     <div class="patients" id="patients"></div>
     <div class="panel" id="ptDetail"></div>
   </div>
@@ -411,11 +436,17 @@ function applyLang(){
   ['#nav','#disc','#view-jour','#view-plan','.brand','#qCrisis'].forEach(s=>{const el=$(s);el.dir=rtl?'rtl':'ltr';el.lang=rtl?'ar-MA':'fr'});
   $('#daNote').hidden=!rtl;
   const tags=rtl?TAGS_DA:TAGS_FR;document.querySelectorAll('#chips label').forEach((l,i)=>l.textContent=tags[i]);
-  document.querySelectorAll('.lang button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===lang));
+  document.querySelectorAll('button[data-lang]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===lang));
   buildPlan();
   if(!$('#qCrisis').hidden)$('#qCrisis').innerHTML=$('#crisis').innerHTML;
 }
-document.querySelectorAll('.lang button').forEach(b=>b.onclick=()=>{lang=b.dataset.lang;store('nafas-lang',lang);applyLang();renderAll()});
+document.querySelectorAll('button[data-lang]').forEach(b=>b.onclick=()=>{lang=b.dataset.lang;store('nafas-lang',lang);applyLang();renderAll()});
+
+/* ---------- thème : auto (réglage du téléphone), clair ou sombre ---------- */
+function applyTheme(t){if(t!=='light'&&t!=='dark')t='auto';if(t==='auto')delete document.documentElement.dataset.theme;else document.documentElement.dataset.theme=t;
+  document.querySelectorAll('button[data-theme-set]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.themeSet===t))}
+applyTheme(load('nafas-theme','auto'));
+document.querySelectorAll('button[data-theme-set]').forEach(b=>b.onclick=()=>{store('nafas-theme',b.dataset.themeSet);applyTheme(b.dataset.themeSet)});
 
 /* ---------- questionnaires ---------- */
 const QDEF={
@@ -484,7 +515,8 @@ document.querySelectorAll('input[name=risk]').forEach(r=>r.addEventListener('cha
 $('#entryForm').addEventListener('submit',e=>{
   e.preventDefault();
   const v=n=>document.querySelector(`input[name=${n}]:checked`).value,sleep=parseFloat($('#sleep').value);
-  if(isNaN(sleep)||sleep<0||sleep>16){$('#toast').style.color='var(--crit)';$('#toast').textContent="Indique un sommeil entre 0 et 16 heures.";return}
+  if(isNaN(sleep)||sleep<0||sleep>16){$('#toast').style.color='var(--crit)';$('#toast').textContent="Indique un sommeil entre 0 et 16 heures.";$('#sleep').setAttribute('aria-invalid','true');$('#sleep').focus();return}
+  $('#sleep').removeAttribute('aria-invalid');
   const entry={date:iso(Date.now()),mood:+v('mood'),anx:+v('anx'),sleep,med:v('med'),risk:v('risk'),
     tags:[...document.querySelectorAll('#chips input:checked')].map(c=>c.value),note:$('#noteTxt').value.trim(),demo:false};
   const next=mine.filter(x=>x.date!==entry.date).concat(entry);
@@ -517,7 +549,7 @@ $('#qForm').addEventListener('change',liveQ);
 document.querySelectorAll('#qSeg button').forEach(b=>b.onclick=()=>{qType=b.dataset.q;buildQ()});
 $('#qForm').addEventListener('submit',e=>{
   e.preventDefault();const a=answers(),miss=a.filter(x=>x===null).length;
-  if(miss){$('#qToast').style.color='var(--crit)';$('#qToast').textContent=`Il manque ${miss} réponse${miss>1?'s':''} pour calculer le score.`;return}
+  if(miss){$('#qToast').style.color='var(--crit)';$('#qToast').textContent=`Il manque ${miss} réponse${miss>1?'s':''} pour calculer le score.`;document.querySelector(`input[name=qi${a.indexOf(null)}]`).focus();return}
   const rec={date:iso(Date.now()),type:qType,items:a,demo:false};
   const next=myQs.filter(r=>!(r.type===rec.type&&r.date===rec.date)).concat(rec);
   if(!store('nafas-q',next)){$('#qToast').style.color='var(--crit)';$('#qToast').textContent=SAVE_FAIL;return}
@@ -694,7 +726,7 @@ function lastScore(p,t){const l=byType(p.q,t).at(-1);return l?qScore(l):'—'}
 function renderPro(){
   const list=PATIENTS.map(p=>({p,st:status(p)})).sort((a,b)=>a.st.rank-b.st.rank);
   if(!sel)sel=list[0].p.id;
-  $('#patients').innerHTML=list.map(({p,st})=>`<button class="pt" data-id="${p.id}" aria-pressed="${p.id===sel}"><span class="av">${p.ini}</span><span><strong>${p.name}</strong><span class="sc">PHQ ${lastScore(p,'phq')} · GAD ${lastScore(p,'gad')}</span><div class="meta">${p.motif}</div><span class="pill ${st.cls}">${st.t}</span></span>${spark(p.s.slice(-14))}</button>`).join('');
+  $('#patients').innerHTML=list.map(({p,st})=>`<button class="pt" data-id="${p.id}" data-st="${st.cls}" aria-pressed="${p.id===sel}"><span class="av">${p.ini}</span><span><strong>${p.name}</strong><span class="sc">PHQ ${lastScore(p,'phq')} · GAD ${lastScore(p,'gad')}</span><div class="meta">${p.motif}</div><span class="pill ${st.cls}">${st.t}</span></span>${spark(p.s.slice(-14))}</button>`).join('');
   document.querySelectorAll('.pt').forEach(b=>b.onclick=()=>{sel=b.dataset.id;renderPro()});
   const p=PATIENTS.find(x=>x.id===sel),st=status(p),last=p.s[p.s.length-1],pf=planFilled(p.plan);
   const chip=t=>{const v=lastScore(p,t);if(v==='—')return'';const [lab,c]=sev(t,v);return`<span class="pill ${c}">${QDEF[t].name} ${v} · ${lab}</span>`};
