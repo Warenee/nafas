@@ -162,3 +162,94 @@ Trois corrections CSS ajoutées sur cette branche, sans changement de texte :
 - **Polices** : les variables `--display`, `--body` et `--mono` citaient encore Bricolage Grotesque, Figtree et IBM Plex, qui ne sont plus chargées depuis la PR #15. Elles listent maintenant seulement les polices du téléphone, dont des polices arabes (Noto Sans Arabic, Geeza Pro) pour la darija.
 - **Graphiques** : une marge de 12 px sous chaque graphique évite que la barre de défilement cache les dates de l'axe (anomalie relevée sur iPhone, issue #1).
 - **Débordement horizontal** : les cartes des colonnes latérales (`.stack`) peuvent maintenant rétrécir. Sur mobile, l'onglet Questionnaires ne dépasse plus de l'écran (10 px sur `main`, 1 px avant cet ajout, 0 après ; mesuré à 375 px de large).
+
+---
+
+# Complément : thèmes, états et validation (26 septembre 2026, soir)
+
+Branche `design/etats-et-validation`, à partir de `main` au commit `ffcfaab`.
+
+## 1. Direction
+
+Un outil de suivi entre séances doit inspirer **confiance** et ne jamais surprendre : chaque écran dit ce qu'il attend, ce qui s'est passé, et ce qui manque. Pas d'effet de mode (dégradés, verre dépoli, animations décoratives) : ils vieillissent vite et affaiblissent l'impression de sérieux. On améliore ce qui existe par petites touches, sans toucher au contenu clinique ni aux textes de crise.
+
+## 2. Ce qui était déjà en place (vérifié, pas refait)
+
+| Demande | État sur `main` | Vérification |
+|---|---|---|
+| Thème clair / sombre, réglage du système par défaut, choix manuel | ✅ PR #20 : boutons Auto / Clair / Sombre, choix gardé, appliqué avant l'affichage | Testé : système clair et sombre, clic sur chaque bouton, rechargement, aucun flash, aucune erreur |
+| Contrastes, focus, cibles tactiles, mouvement réduit | ✅ PR du design « calme et clinique » | 36/36 paires conformes WCAG |
+| Validation du sommeil | ✅ `aria-invalid` + message + focus | — |
+| Navigation au clavier des onglets | ✅ PR #14 | — |
+
+## 3. Ajouts de cette branche, par priorité
+
+| # | Changement | Pourquoi | Principe |
+|---|---|---|---|
+| 1 | **Questionnaire : chaque question sans réponse est signalée** (« Réponse manquante » sous la question, bordure rouge sur ses choix, lien `aria-describedby`) ; la mention disparaît dès qu'on répond ; le focus va sur la première question manquante (déjà présent). | Avant, seul « Il manque 7 réponses » s'affichait, sans dire lesquelles : il fallait tout relire. | WCAG 3.3.1 (identifier l'erreur) et 3.3.3 (suggestion de correction) |
+| 2 | **Lien « Aller au contenu »**, premier élément au clavier, visible seulement quand on l'atteint ; le contenu est dans une zone `<main>`. | Au clavier, on évitait l'en-tête et les 6 onglets à chaque page. Le bandeau d'urgence reste avant, dans l'ordre de lecture. | WCAG 2.4.1 (contourner des blocs) |
+| 3 | **Microcopie de confiance** sous « Enregistrer ma journée » : « Tes réponses restent sur cet appareil : rien n'est envoyé. » | Répond à l'inquiétude au moment exact où la personne enregistre. Phrase exacte depuis la suppression des polices Google. | Transparence |
+| 4 | **États vides homogènes** (classe `.empty`) : historique des scores et graphique des questionnaires. | Un écran vide doit dire pourquoi il est vide et ce qui va s'y afficher. | Heuristique n° 1 de Nielsen (visibilité de l'état du système) |
+| 5 | **Tableaux homogènes** : cadre, coins arrondis, fond de carte, chiffres alignés à droite. | Plus faciles à parcourir, même apparence que les cartes. | Cohérence |
+
+**Choix par défaut, et pourquoi**
+
+- **Pas d'état « chargement »** : tout est enregistré dans le navigateur et s'affiche instantanément. Ajouter un indicateur de chargement factice ferait croire à un serveur qui n'existe pas.
+- **Nouveaux textes en français seulement** (lien d'évitement, microcopie, « Réponse manquante ») : en mode darija, ils restent en français, car je n'écris pas de darija qui n'a pas été relue. À ajouter au dossier de relecture.
+- **Thème « Auto » par défaut** : il respecte le choix déjà fait par la personne sur son téléphone.
+
+## 4. Modifications (résumé)
+
+```css
+/* Tableaux */
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r-m);background:var(--surface)}
+.tbl tbody tr:last-child td{border-bottom:0}
+td.n{text-align:end}
+/* Lien d'évitement */
+.skip{position:absolute;inset-inline-start:-9999px;top:var(--sp-2);z-index:10;background:var(--surface);color:var(--ink);border:2px solid var(--accent);border-radius:var(--r-s);padding:var(--sp-2) var(--sp-3);font-weight:600}
+.skip:focus{inset-inline-start:var(--sp-4)}
+main:focus{outline:none}
+/* État vide */
+.empty{padding:var(--sp-5) var(--sp-4);text-align:center;color:var(--ink-2);background:var(--sunk);border-radius:var(--r-m);font-size:14px}
+/* Question sans réponse */
+fieldset.qi legend{flex-wrap:wrap}
+fieldset.qi legend>span:nth-child(2){flex:1;min-width:0}
+.qmiss{flex-basis:100%;padding-inline-start:34px;color:var(--crit);font-weight:600;font-size:13px}
+fieldset.qi[data-missing] .opts label{border-color:var(--crit)}
+.save-note{margin:0;font-size:13px;color:var(--ink-3)}
+```
+
+```html
+<a class="skip" href="#main">Aller au contenu</a>          <!-- juste après <body> -->
+<main id="main" tabindex="-1"> … </main>                    <!-- entre </nav> et <footer> -->
+<p class="save-note" data-i18n="save_note">Tes réponses restent sur cet appareil : rien n'est envoyé.</p>
+```
+
+JavaScript : une fonction `markMissing()` (marque et démarque les questions), appelée à l'envoi et à chaque réponse ; une ligne « Aucun score pour l'instant » quand l'historique est vide. Aucun nouveau jeton de couleur : tout réutilise le système existant.
+
+**Contrastes des nouveaux éléments** : « Réponse manquante » 6,8:1 (clair) / 5,7:1 (sombre) ; microcopie 5,8 / 6,0 ; état vide 6,0 / 7,1.
+
+## 5. Vérifications
+
+### Thèmes
+- [ ] Téléphone en mode clair, bouton « Auto » : l'app est claire. Passer le téléphone en sombre : l'app suit.
+- [ ] « Sombre » puis recharger : reste sombre, sans flash blanc.
+- [ ] « Clair » alors que le téléphone est en sombre : reste clair.
+- [ ] Le bouton du thème actif est bien mis en valeur, et annoncé « appuyé » par le lecteur d'écran.
+- [ ] Encadré de crise, pastilles, graphiques et état vide lisibles dans les deux thèmes.
+
+### Accessibilité
+- [ ] Première touche Tab : « Aller au contenu » apparaît ; Entrée amène au formulaire.
+- [ ] Questionnaire : répondre à 2 questions, enregistrer → les 7 autres sont marquées, le focus est sur la 3ᵉ.
+- [ ] Répondre à une question marquée → sa mention disparaît aussitôt.
+- [ ] Lecteur d'écran (VoiceOver ou TalkBack) : sur une question marquée, « Réponse manquante » est lu.
+- [ ] Sommeil à 20 h → message d'erreur, champ entouré de rouge, focus dessus.
+- [ ] « Réduire les animations » activé : aucune transition.
+
+### Responsive
+- [ ] 390 px de large : sur une question marquée, le numéro reste à côté de la question, la mention est dessous.
+- [ ] Tableaux (historique, journal) : défilement horizontal si besoin, sans casser la page.
+- [ ] Mode darija : le lien d'évitement et la microcopie restent lisibles (en français).
+
+### Sécurité (à refaire à chaque changement)
+- [ ] Bandeau d'urgence, encadré de crise (journal et questionnaire) et plan de sécurité : texte identique, en français et en darija (vérifié automatiquement pour cette branche).
