@@ -7,9 +7,6 @@
 <meta name="description" content="Nafas : prototype de suivi entre les séances de psychothérapie. Données fictives uniquement.">
 <style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Nafas V1</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Arabic:wght@400;600&display=swap">
 <style>
 :root{
   --ground:#F2F5F4; --surface:#FFFFFF; --sunk:#E6ECEA; --ink:#182624; --ink-2:#4A5B58; --ink-3:#7A8986;
@@ -372,14 +369,17 @@ const $=s=>document.querySelector(s);
 const DAY=86400000;
 const fmt=d=>new Date(d).toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'});
 const fmtS=d=>new Date(d).toLocaleDateString('fr-FR',{day:'numeric',month:'short'});
-const iso=d=>new Date(d).toISOString().slice(0,10);
+/* Date AAAA-MM-JJ à l'heure du téléphone (et non à l'heure UTC, qui décale d'un jour entre minuit et 1 h au Maroc). */
+const iso=d=>{const x=new Date(d);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')};
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const avg=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:0;
 const f1=n=>n.toFixed(1).replace('.',',');
 function esc(t){return String(t).replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]))}
 function rng(seed){let s=seed;return()=>{s=(s*9301+49297)%233280;return s/233280}}
 function load(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
-function store(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+/* Renvoie true si la donnée est bien enregistrée, false si le navigateur a bloqué le stockage. */
+function store(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}}
+const SAVE_FAIL="Impossible d'enregistrer : ce navigateur bloque le stockage des données. Rien n'a été sauvegardé.";
 
 /* ---------- i18n ---------- */
 const TAGS_FR=["Fac / examens","Famille","Relations","Argent","Solitude","Santé physique","Travail","Rien de particulier"];
@@ -408,11 +408,12 @@ function applyLang(){
   document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.dataset.i18n;if(!(k in FR))FR[k]=el.textContent;el.textContent=T(k)});
   document.querySelectorAll('[data-i18n-ph]').forEach(el=>{const k=el.dataset.i18nPh;if(!(k in FR))FR[k]=el.placeholder;el.placeholder=T(k)});
   const rtl=lang==='da';
-  ['#nav','#disc','#view-jour','#view-plan','.brand'].forEach(s=>{const el=$(s);el.dir=rtl?'rtl':'ltr';el.lang=rtl?'ar-MA':'fr'});
+  ['#nav','#disc','#view-jour','#view-plan','.brand','#qCrisis'].forEach(s=>{const el=$(s);el.dir=rtl?'rtl':'ltr';el.lang=rtl?'ar-MA':'fr'});
   $('#daNote').hidden=!rtl;
   const tags=rtl?TAGS_DA:TAGS_FR;document.querySelectorAll('#chips label').forEach((l,i)=>l.textContent=tags[i]);
   document.querySelectorAll('.lang button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===lang));
   buildPlan();
+  if(!$('#qCrisis').hidden)$('#qCrisis').innerHTML=$('#crisis').innerHTML;
 }
 document.querySelectorAll('.lang button').forEach(b=>b.onclick=()=>{lang=b.dataset.lang;store('nafas-lang',lang);applyLang();renderAll()});
 
@@ -471,7 +472,9 @@ const DEMO_ME_Q=makeWeekly(DEMO_ME,11);
 let mine=load('nafas-entries',[]),myQs=load('nafas-q',[]);
 function mySeries(){const m=new Map(DEMO_ME.map(e=>[e.date,e]));mine.forEach(e=>m.set(e.date,e));return[...m.values()].sort((a,b)=>a.date<b.date?-1:1)}
 function myQ(){const m=new Map(DEMO_ME_Q.map(r=>[r.type+r.date,r]));myQs.forEach(r=>m.set(r.type+r.date,r));return[...m.values()]}
-const loadPlan=()=>load('nafas-plan',null);
+/* Retire l'ancienne ligne Stop Silence (service arrêté, voir docs/verification-ressources-crise.md) des plans déjà enregistrés. */
+const OLD_SS_LINE="Stop Silence (chat, darija / français) : stopsilence.net\n";
+const loadPlan=()=>{const p=load('nafas-plan',null);if(p&&p.f&&typeof p.f['5']==='string')p.f['5']=p.f['5'].replace(OLD_SS_LINE,'');return p};
 
 /* ---------- daily form ---------- */
 function buildScale(el,name,def){for(let i=1;i<=10;i++){const id=name+'-'+i;el.insertAdjacentHTML('beforeend',`<input type="radio" name="${name}" id="${id}" value="${i}" ${i===def?'checked':''}><label for="${id}">${i}</label>`)} }
@@ -484,7 +487,9 @@ $('#entryForm').addEventListener('submit',e=>{
   if(isNaN(sleep)||sleep<0||sleep>16){$('#toast').style.color='var(--crit)';$('#toast').textContent="Indique un sommeil entre 0 et 16 heures.";return}
   const entry={date:iso(Date.now()),mood:+v('mood'),anx:+v('anx'),sleep,med:v('med'),risk:v('risk'),
     tags:[...document.querySelectorAll('#chips input:checked')].map(c=>c.value),note:$('#noteTxt').value.trim(),demo:false};
-  mine=mine.filter(x=>x.date!==entry.date);mine.push(entry);store('nafas-entries',mine);
+  const next=mine.filter(x=>x.date!==entry.date).concat(entry);
+  if(!store('nafas-entries',next)){$('#toast').style.color='var(--crit)';$('#toast').textContent=SAVE_FAIL;return}
+  mine=next;
   $('#toast').style.color='var(--good)';
   $('#toast').textContent=lang==='da'?'تسجل.':(entry.risk==='oui'?"Enregistré. Les numéros ci-dessus sont là si besoin.":"Journée enregistrée.");
   renderAll();
@@ -514,7 +519,9 @@ $('#qForm').addEventListener('submit',e=>{
   e.preventDefault();const a=answers(),miss=a.filter(x=>x===null).length;
   if(miss){$('#qToast').style.color='var(--crit)';$('#qToast').textContent=`Il manque ${miss} réponse${miss>1?'s':''} pour calculer le score.`;return}
   const rec={date:iso(Date.now()),type:qType,items:a,demo:false};
-  myQs=myQs.filter(r=>!(r.type===rec.type&&r.date===rec.date));myQs.push(rec);store('nafas-q',myQs);
+  const next=myQs.filter(r=>!(r.type===rec.type&&r.date===rec.date)).concat(rec);
+  if(!store('nafas-q',next)){$('#qToast').style.color='var(--crit)';$('#qToast').textContent=SAVE_FAIL;return}
+  myQs=next;
   $('#qToast').style.color='var(--good)';
   $('#qToast').textContent=`${QDEF[qType].name} enregistré : ${qScore(rec)} / ${QDEF[qType].max}.`+(qType==='phq'&&a[8]>0?" Ta réponse à la question 9 apparaîtra en priorité chez ton praticien.":"");
   renderQHist();renderDue();
@@ -554,7 +561,8 @@ function buildPlan(){
 }
 $('#planForm').addEventListener('submit',e=>{
   e.preventDefault();const f={};document.querySelectorAll('#planForm textarea').forEach(t=>f[t.dataset.k]=t.value.trim());
-  store('nafas-plan',{f,date:iso(Date.now())});$('#planToast').textContent=lang==='da'?'تسجلات الخطة.':'Plan enregistré.';renderPlanStatus();
+  if(!store('nafas-plan',{f,date:iso(Date.now())})){$('#planToast').style.color='var(--crit)';$('#planToast').textContent=SAVE_FAIL;return}
+  $('#planToast').style.color='';$('#planToast').textContent=lang==='da'?'تسجلات الخطة.':'Plan enregistré.';renderPlanStatus();
 });
 function planFilled(p){if(!p)return 0;const defaults=[PLAN5_DEFAULT.fr.trim(),PLAN5_DEFAULT.da.trim()];return PLAN.filter(s=>p.f[s.k]&&!defaults.includes(p.f[s.k])).length}
 function renderPlanStatus(){
@@ -653,7 +661,7 @@ function renderQ(){if(!$('#qItems').children.length)buildQ();renderQHist()}
 function renderPlanV(){renderPlanStatus()}
 function renderHist(){
   const s=mySeries();$('#scoreChart').innerHTML=scoreChart(myQ());kpis($('#kpis30'),s.slice(-30),null);$('#chart30').innerHTML=chart(s.slice(-31));
-  $('#journal').innerHTML=s.slice().reverse().map(e=>`<tr><td>${fmt(e.date)}${e.demo?'':' <span class="pill good">toi</span>'}</td><td class="n">${e.mood}</td><td class="n">${e.anx}</td><td class="n">${f1(e.sleep)} h</td><td>${e.med==='oui'?'Pris':e.med==='non'?'<span class="pill crit">Non pris</span>':'—'}</td><td>${e.risk==='oui'?'<span class="pill crit">Idées noires</span> ':''}${esc(e.note||e.tags.join(', '))}</td></tr>`).join('');
+  $('#journal').innerHTML=s.slice().reverse().map(e=>`<tr><td>${fmt(e.date)}${e.demo?'':' <span class="pill good">toi</span>'}</td><td class="n">${esc(e.mood)}</td><td class="n">${esc(e.anx)}</td><td class="n">${f1(e.sleep)} h</td><td>${e.med==='oui'?'Pris':e.med==='non'?'<span class="pill crit">Non pris</span>':'—'}</td><td>${e.risk==='oui'?'<span class="pill crit">Idées noires</span> ':''}${esc(e.note||e.tags.join(', '))}</td></tr>`).join('');
 }
 const ME={id:'me',name:'Vous (démo)',ini:'V',age:'19 ans',motif:'Anxiété, sommeil',get s(){return mySeries()},get q(){return myQ()},get plan(){return loadPlan()}};
 function renderRapport(){$('#reportTxt').textContent=reportText(ME)}
@@ -707,12 +715,21 @@ function renderPro(){
 /* ---------- tabs ---------- */
 const views={jour:renderJour,q:renderQ,plan:renderPlanV,hist:renderHist,rapport:renderRapport,pro:renderPro};
 let cur='jour';
-function show(v){cur=v;document.querySelectorAll('nav.tabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.view===v));
+function show(v){cur=v;document.querySelectorAll('nav.tabs button').forEach(b=>{b.setAttribute('aria-selected',b.dataset.view===v);b.tabIndex=b.dataset.view===v?0:-1});
   Object.keys(views).forEach(k=>$('#view-'+k).hidden=k!==v);views[v]();store('nafas-tab',v);window.scrollTo(0,0)}
 document.querySelectorAll('nav.tabs button').forEach(b=>b.onclick=()=>show(b.dataset.view));
+/* onglets accessibles : lien onglet ↔ contenu, flèches du clavier */
+const tabBtns=[...document.querySelectorAll('nav.tabs button')];
+tabBtns.forEach(b=>{const p=$('#view-'+b.dataset.view);b.setAttribute('aria-controls',p.id);p.setAttribute('role','tabpanel');p.setAttribute('aria-labelledby',b.id)});
+$('#nav').addEventListener('keydown',e=>{
+  const i=tabBtns.indexOf(document.activeElement);if(i<0)return;
+  const rtl=$('#nav').dir==='rtl',n=tabBtns.length;
+  let j={ArrowRight:rtl?i-1:i+1,ArrowLeft:rtl?i+1:i-1,Home:0,End:n-1}[e.key];if(j===undefined)return;
+  e.preventDefault();j=(j+n)%n;tabBtns[j].focus();show(tabBtns[j].dataset.view);
+});
 function renderAll(){views[cur]()}
 applyLang();
-const h=location.hash.slice(1);let start=load('nafas-tab','jour');if(views[h])start=h;if(!views[start])start='jour';
+const h=location.hash.slice(1);let start=load('nafas-tab','jour');if(Object.hasOwn(views,h))start=h;if(!Object.hasOwn(views,start))start='jour';
 show(start);
 })();
 </script>
