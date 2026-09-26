@@ -7,3 +7,18 @@ Prototype de suivi entre les séances : journal quotidien (humeur, anxiété, so
 Nafas n'est pas un service d'urgence. Au Maroc : SAMU 141 · Police 19 · 112 depuis un mobile.
 
 Projet étudiant en psychologie, ESP Casablanca.
+
+## Essayer la démo
+
+- En ligne : https://warenee.github.io/nafas/
+- En local : ouvrir `index.html` dans un navigateur.
+- Utiliser uniquement des données inventées. Pour repartir de zéro, effacer les données du site dans le navigateur (elles sont dans le `localStorage`).
+
+## Documentation
+
+| Fichier | Contenu |
+|---|---|
+| [`docs/relecture/`](docs/relecture/README.md) | Dossier de relecture darija et clinique |
+| [`docs/entretiens/`](docs/entretiens/README.md) | Kit d'entretiens avec des praticiens |
+| [`docs/rapport-bugs.md`](docs/rapport-bugs.md) | Rapport de bugs de `index.html` |
+| [`docs/verification-ressources-crise.md`](docs/verification-ressources-crise.md) | Vérification des ressources de crise (non confirmée localement) |
