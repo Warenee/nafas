@@ -412,11 +412,12 @@ function applyLang(){
   document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.dataset.i18n;if(!(k in FR))FR[k]=el.textContent;el.textContent=T(k)});
   document.querySelectorAll('[data-i18n-ph]').forEach(el=>{const k=el.dataset.i18nPh;if(!(k in FR))FR[k]=el.placeholder;el.placeholder=T(k)});
   const rtl=lang==='da';
-  ['#nav','#disc','#view-jour','#view-plan','.brand'].forEach(s=>{const el=$(s);el.dir=rtl?'rtl':'ltr';el.lang=rtl?'ar-MA':'fr'});
+  ['#nav','#disc','#view-jour','#view-plan','.brand','#qCrisis'].forEach(s=>{const el=$(s);el.dir=rtl?'rtl':'ltr';el.lang=rtl?'ar-MA':'fr'});
   $('#daNote').hidden=!rtl;
   const tags=rtl?TAGS_DA:TAGS_FR;document.querySelectorAll('#chips label').forEach((l,i)=>l.textContent=tags[i]);
   document.querySelectorAll('.lang button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===lang));
   buildPlan();
+  if(!$('#qCrisis').hidden)$('#qCrisis').innerHTML=$('#crisis').innerHTML;
 }
 document.querySelectorAll('.lang button').forEach(b=>b.onclick=()=>{lang=b.dataset.lang;store('nafas-lang',lang);applyLang();renderAll()});
 
