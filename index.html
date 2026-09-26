@@ -711,9 +711,18 @@ function renderPro(){
 /* ---------- tabs ---------- */
 const views={jour:renderJour,q:renderQ,plan:renderPlanV,hist:renderHist,rapport:renderRapport,pro:renderPro};
 let cur='jour';
-function show(v){cur=v;document.querySelectorAll('nav.tabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.view===v));
+function show(v){cur=v;document.querySelectorAll('nav.tabs button').forEach(b=>{b.setAttribute('aria-selected',b.dataset.view===v);b.tabIndex=b.dataset.view===v?0:-1});
   Object.keys(views).forEach(k=>$('#view-'+k).hidden=k!==v);views[v]();store('nafas-tab',v);window.scrollTo(0,0)}
 document.querySelectorAll('nav.tabs button').forEach(b=>b.onclick=()=>show(b.dataset.view));
+/* onglets accessibles : lien onglet ↔ contenu, flèches du clavier */
+const tabBtns=[...document.querySelectorAll('nav.tabs button')];
+tabBtns.forEach(b=>{const p=$('#view-'+b.dataset.view);b.setAttribute('aria-controls',p.id);p.setAttribute('role','tabpanel');p.setAttribute('aria-labelledby',b.id)});
+$('#nav').addEventListener('keydown',e=>{
+  const i=tabBtns.indexOf(document.activeElement);if(i<0)return;
+  const rtl=$('#nav').dir==='rtl',n=tabBtns.length;
+  let j={ArrowRight:rtl?i-1:i+1,ArrowLeft:rtl?i+1:i-1,Home:0,End:n-1}[e.key];if(j===undefined)return;
+  e.preventDefault();j=(j+n)%n;tabBtns[j].focus();show(tabBtns[j].dataset.view);
+});
 function renderAll(){views[cur]()}
 applyLang();
 const h=location.hash.slice(1);let start=load('nafas-tab','jour');if(views[h])start=h;if(!views[start])start='jour';
