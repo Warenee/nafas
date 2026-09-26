@@ -654,7 +654,7 @@ function renderQ(){if(!$('#qItems').children.length)buildQ();renderQHist()}
 function renderPlanV(){renderPlanStatus()}
 function renderHist(){
   const s=mySeries();$('#scoreChart').innerHTML=scoreChart(myQ());kpis($('#kpis30'),s.slice(-30),null);$('#chart30').innerHTML=chart(s.slice(-31));
-  $('#journal').innerHTML=s.slice().reverse().map(e=>`<tr><td>${fmt(e.date)}${e.demo?'':' <span class="pill good">toi</span>'}</td><td class="n">${e.mood}</td><td class="n">${e.anx}</td><td class="n">${f1(e.sleep)} h</td><td>${e.med==='oui'?'Pris':e.med==='non'?'<span class="pill crit">Non pris</span>':'—'}</td><td>${e.risk==='oui'?'<span class="pill crit">Idées noires</span> ':''}${esc(e.note||e.tags.join(', '))}</td></tr>`).join('');
+  $('#journal').innerHTML=s.slice().reverse().map(e=>`<tr><td>${fmt(e.date)}${e.demo?'':' <span class="pill good">toi</span>'}</td><td class="n">${esc(e.mood)}</td><td class="n">${esc(e.anx)}</td><td class="n">${f1(e.sleep)} h</td><td>${e.med==='oui'?'Pris':e.med==='non'?'<span class="pill crit">Non pris</span>':'—'}</td><td>${e.risk==='oui'?'<span class="pill crit">Idées noires</span> ':''}${esc(e.note||e.tags.join(', '))}</td></tr>`).join('');
 }
 const ME={id:'me',name:'Vous (démo)',ini:'V',age:'19 ans',motif:'Anxiété, sommeil',get s(){return mySeries()},get q(){return myQ()},get plan(){return loadPlan()}};
 function renderRapport(){$('#reportTxt').textContent=reportText(ME)}
@@ -722,7 +722,7 @@ $('#nav').addEventListener('keydown',e=>{
 });
 function renderAll(){views[cur]()}
 applyLang();
-const h=location.hash.slice(1);let start=load('nafas-tab','jour');if(views[h])start=h;if(!views[start])start='jour';
+const h=location.hash.slice(1);let start=load('nafas-tab','jour');if(Object.hasOwn(views,h))start=h;if(!Object.hasOwn(views,start))start='jour';
 show(start);
 })();
 </script>
