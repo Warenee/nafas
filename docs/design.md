@@ -152,3 +152,13 @@ Un test A/B n'est pas adapté ici : il faudrait beaucoup d'utilisateurs, et la d
 | « Quelle version préfères-tu lire, et pourquoi ? » | Tous | Préférence, en leurs mots |
 
 **Critère de réussite** : la nouvelle version n'est jamais plus lente ni plus confuse pour la tâche « idées noires », et au moins aussi rapide pour les autres. Si la tâche de crise se dégrade, même légèrement, on revient en arrière.
+
+---
+
+## Ajouts du 26 septembre 2026 (soir)
+
+Trois corrections CSS ajoutées sur cette branche, sans changement de texte :
+
+- **Polices** : les variables `--display`, `--body` et `--mono` citaient encore Bricolage Grotesque, Figtree et IBM Plex, qui ne sont plus chargées depuis la PR #15. Elles listent maintenant seulement les polices du téléphone, dont des polices arabes (Noto Sans Arabic, Geeza Pro) pour la darija.
+- **Graphiques** : une marge de 12 px sous chaque graphique évite que la barre de défilement cache les dates de l'axe (anomalie relevée sur iPhone, issue #1).
+- **Débordement horizontal** : les cartes des colonnes latérales (`.stack`) peuvent maintenant rétrécir. Sur mobile, l'onglet Questionnaires ne dépasse plus de l'écran (10 px sur `main`, 1 px avant cet ajout, 0 après ; mesuré à 375 px de large).

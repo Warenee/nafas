@@ -13,9 +13,10 @@
   --line:#D5DEDB; --field-line:#7F8D8A; --accent:#2F6F73; --accent-ink:#FFFFFF; --accent-soft:#DCEBEA;
   --good:#2B6B45; --warn:#8A5710; --crit:#A3352F; --crit-soft:#F7E3E1; --warn-soft:#F6ECD9; --good-soft:#E0F0E6;
   --sleep:#6B6FB3;
-  --display:"Bricolage Grotesque","IBM Plex Sans Arabic",ui-sans-serif,system-ui,sans-serif;
-  --body:"Figtree","IBM Plex Sans Arabic",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
-  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  /* Polices du téléphone uniquement (aucune requête externe depuis la PR #15). */
+  --display:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Arabic","Geeza Pro",sans-serif;
+  --body:var(--display);
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
   /* Espacements (grille de 4 px), rayons, cible tactile, durée d'animation */
   --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px;
   --r-s:8px; --r-m:12px; --r-l:16px; --tap:44px; --dur:.15s;
@@ -99,7 +100,7 @@ textarea{width:100%;min-height:80px;resize:vertical}
 .kpi .k{font-size:12px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.05em}
 .kpi .v{font:500 22px var(--mono);font-variant-numeric:tabular-nums}
 .kpi .d{font-size:12px;color:var(--ink-2)}
-.chart{width:100%;overflow-x:auto}
+.chart{width:100%;overflow-x:auto;padding-bottom:12px}
 .chart svg{display:block;width:100%;height:auto;min-width:520px}
 .legend{display:flex;gap:16px;font-size:13px;color:var(--ink-2);margin-top:6px;flex-wrap:wrap}
 .legend i{display:inline-block;width:12px;height:3px;border-radius:2px;margin-inline-end:6px;vertical-align:middle}
@@ -132,6 +133,7 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums}
 .report{font-family:var(--mono);font-size:13px;white-space:pre-wrap;background:var(--sunk);border-radius:10px;padding:14px;max-height:420px;overflow:auto}
 .note{font-size:13px;color:var(--ink-3);margin-top:14px;max-width:70ch}
 .stack{display:grid;gap:16px}
+.stack>*{min-width:0}
 /* questionnaires */
 .seg{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
 .seg button{border:1px solid var(--field-line);background:var(--surface);color:var(--ink-2);font:600 14px var(--body);padding:8px 14px;border-radius:10px;cursor:pointer}
