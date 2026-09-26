@@ -1,0 +1,48 @@
+{
+  "bandeau_disc": "<div class=\"disc\" id=\"disc\"><span data-i18n=\"disc\">Nafas n'est pas un service d'urgence et ton praticien ne lit pas tes réponses en continu. En danger maintenant :</span> <b>15</b> · <b>19</b> · <b>112</b> <span>(<span data-i18n=\"c_112\">depuis un mobile</span>)</span></div>",
+  "encadre_crisis": "<div class=\"crisis\" id=\"crisis\" hidden>\n        <strong data-i18n=\"c_t\">Tu n'as pas à gérer ça seul(e). Si tu es en danger maintenant, appelle :</strong>\n        <ul>\n          <li><span class=\"num\">15</span> — <span data-i18n=\"c_15\">SAMU et pompiers (Protection civile)</span></li>\n          <li><span class=\"num\">19</span> — <span data-i18n=\"c_19\">Police secours</span> · <span class=\"num\">112</span> <span data-i18n=\"c_112\">depuis un mobile</span></li>\n          <li><span class=\"num\">141</span> — <span data-i18n=\"c_141\">Allô SAMU (vérifie la disponibilité dans ta région)</span></li>\n        </ul>\n        <p class=\"note\" data-i18n=\"c_note\">Le 141 est annoncé en phase pilote dans la région Rabat-Salé-Kénitra : vérifie sa disponibilité ailleurs. Si tu ne peux pas appeler, demande à un proche de t'accompagner aux urgences les plus proches.</p>\n        <button class=\"btn crit small\" type=\"button\" data-go=\"plan\" data-i18n=\"c_plan\">Ouvrir mon plan de sécurité</button>\n      </div>",
+  "darija": {
+    "disc": "نفس ماشي خدمة ديال المستعجلات، والمعالج ديالك ما كيقراش الأجوبة ديالك فكل وقت. إلا كنتي فخطر دابا:",
+    "c_t": "ماشي بوحدك. إلا كنتي فخطر دابا، عيط ل:",
+    "c_141": "Allô SAMU (تأكد واش خدام فالجهة ديالك)",
+    "c_15": "الإسعاف والوقاية المدنية",
+    "c_19": "البوليس",
+    "c_112": "من البورطابل",
+    "c_note": "الرقم 141 معلن عليه فمرحلة تجريبية فجهة الرباط سلا القنيطرة؛ تأكد واش متوفر فجهتك. إلا ما قدرتيش تعيط، طلب من شي حد قريب يرافقك للمستعجلات القريبة.",
+    "c_plan": "حل خطة الأمان ديالي"
+  },
+  "plan_etapes_5_6": [
+    {
+      "k": "5",
+      "n": "5",
+      "fr": [
+        "Professionnels et urgences",
+        "Mon psychologue, mon psychiatre, et les numéros d'urgence.",
+        ""
+      ],
+      "da": [
+        "المختصين والمستعجلات",
+        "المعالج ديالي، الطبيب، ونمر المستعجلات.",
+        ""
+      ]
+    },
+    {
+      "k": "6",
+      "n": "6",
+      "fr": [
+        "Rendre mon environnement plus sûr",
+        "Ce que je fais, avec qui, pour éloigner ce qui pourrait me servir à me faire du mal.",
+        "Ex. confier mes médicaments à ma mère, qui me les donne jour par jour…"
+      ],
+      "da": [
+        "نخلي المحيط ديالي آمن",
+        "شنو ندير ومع من باش نبعد الحوايج الخطيرة.",
+        "مثلا: نعطي الدوا لماما وهي تعطيني كل نهار ديالو…"
+      ]
+    }
+  ],
+  "PLAN5_DEFAULT": {
+    "fr": "Protection civile 15 · Police 19 · 112 depuis un mobile\nSAMU 141 (à vérifier dans ta région)\nMon psychologue : \nMon psychiatre : ",
+    "da": "الوقاية المدنية 15 · البوليس 19 · 112 من البورطابل\nSAMU 141 (تأكد واش خدام فالجهة ديالك)\nالمعالج ديالي: \nالطبيب النفسي ديالي: "
+  }
+}
