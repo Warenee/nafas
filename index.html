@@ -174,7 +174,7 @@ footer p{margin:0 0 8px}
   </div>
 </header>
 
-<div class="disc" id="disc"><span data-i18n="disc">Nafas n'est pas un service d'urgence et ton praticien ne lit pas tes réponses en continu. En danger maintenant :</span> <b>141</b> · <b>19</b> · <b>112</b></div>
+<div class="disc" id="disc"><span data-i18n="disc">Nafas n'est pas un service d'urgence et ton praticien ne lit pas tes réponses en continu. En danger maintenant :</span> <b>15</b> · <b>19</b> · <b>112</b> <span>(<span data-i18n="c_112">depuis un mobile</span>)</span></div>
 <div class="danote" id="daNote" hidden>الترجمة للدارجة هنا مثال، خاصها تتصادق من عند مختصين. الاستبيانات (PHQ-9…) باقيين بالفرنسية حتى تكون نسخة بالدارجة مصادق عليها علميا.</div>
 
 <nav class="tabs" role="tablist" id="nav">
@@ -232,12 +232,11 @@ footer p{margin:0 0 8px}
       <div class="crisis" id="crisis" hidden>
         <strong data-i18n="c_t">Tu n'as pas à gérer ça seul(e). Si tu es en danger maintenant, appelle :</strong>
         <ul>
-          <li><span class="num">141</span> — <span data-i18n="c_141">SAMU, urgences médicales</span></li>
-          <li><span class="num">15</span> — <span data-i18n="c_15">Protection civile</span></li>
+          <li><span class="num">15</span> — <span data-i18n="c_15">SAMU et pompiers (Protection civile)</span></li>
           <li><span class="num">19</span> — <span data-i18n="c_19">Police secours</span> · <span class="num">112</span> <span data-i18n="c_112">depuis un mobile</span></li>
-          <li><strong style="color:inherit">Stop Silence</strong> (Sourire de Reda) — <span data-i18n="c_ss">écoute par chat, gratuite et anonyme, en darija et en français :</span> <span class="num">stopsilence.net</span></li>
-          <li><span data-i18n="c_hop">Urgences psychiatriques 24h/24 : CHU Ibn Rochd (Casablanca), Hôpital Ar-Razi (Salé)</span></li>
+          <li><span class="num">141</span> — <span data-i18n="c_141">Allô SAMU (vérifie la disponibilité dans ta région)</span></li>
         </ul>
+        <p class="note" data-i18n="c_note">Le 141 est annoncé en phase pilote dans la région Rabat-Salé-Kénitra : vérifie sa disponibilité ailleurs. Si tu ne peux pas appeler, demande à un proche de t'accompagner aux urgences les plus proches.</p>
         <button class="btn crit small" type="button" data-go="plan" data-i18n="c_plan">Ouvrir mon plan de sécurité</button>
       </div>
       <div class="field">
@@ -302,7 +301,7 @@ footer p{margin:0 0 8px}
 <!-- PLAN -->
 <section id="view-plan" hidden>
   <h2 data-i18n="p_h">Mon plan de sécurité</h2>
-  <p class="sub" data-i18n="p_sub">À remplir avec ton praticien, en séance. Il reste disponible sur ton téléphone même sans connexion, pour les moments où c'est difficile de réfléchir. On le suit dans l'ordre : on passe à l'étape suivante si la précédente ne suffit pas.</p>
+  <p class="sub" data-i18n="p_sub">À remplir avec ton praticien. Ce plan est enregistré dans ce navigateur, mais ne déclenche aucune alerte et ne remplace pas les urgences.</p>
   <div class="grid2">
     <form class="panel plan" id="planForm" novalidate></form>
     <aside class="stack">
@@ -313,7 +312,7 @@ footer p{margin:0 0 8px}
       <div class="panel">
         <h3 data-i18n="p_how">Comment l'utiliser</h3>
         <ol class="ladder" id="ladder"></ol>
-        <p class="note" style="margin-top:12px">Modèle Stanley-Brown. Dans un essai sur 1 640 patients, ce plan associé à un suivi téléphonique a réduit de 45 % les comportements suicidaires sur 6 mois.</p>
+        <p class="note" style="margin-top:12px">Ce plan est un support à préparer avec ton praticien. Il ne remplace pas un suivi ni les urgences.</p>
       </div>
     </aside>
   </div>
@@ -363,7 +362,7 @@ footer p{margin:0 0 8px}
 <footer>
   <p>Contact : [rayanemoutaki1@gmail.com] · Retours bienvenus.
   </p> <strong>Prototype V1.</strong> Tes saisies restent dans ce navigateur, rien n'est envoyé. Ne pas utiliser avec de vrais patients : une version réelle exige une autorisation préalable de la CNDP (loi 09-08, données de santé) et un hébergement au Maroc.</p>
-  <p>Les ressources de crise sont à revérifier une par une avant le pilote. Le 0801 000 180 parfois présenté comme ligne d'écoute est le Centre antipoison : il n'apparaît pas ici.</p>
+  <p>Les ressources de crise et leur disponibilité doivent être vérifiées localement avant le pilote. Le 0801 000 180 concerne les intoxications (Centre antipoison), pas une ligne d'écoute psychologique.</p>
 </footer>
 </div>
 
@@ -377,7 +376,7 @@ const iso=d=>new Date(d).toISOString().slice(0,10);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const avg=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:0;
 const f1=n=>n.toFixed(1).replace('.',',');
-function esc(t){return String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function esc(t){return String(t).replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]))}
 function rng(seed){let s=seed;return()=>{s=(s*9301+49297)%233280;return s/233280}}
 function load(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
 function store(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
@@ -396,11 +395,11 @@ const DA={
   q_sleep:"شحال نعستي البارح؟",hours:"ساعات",q_med:"خديتي الدوا ديالك كيف خاصك؟",yes:"إيه",no:"لا",nomed:"ما عنديش دوا",
   q_tags:"شنو اللي تقل عليك اليوم؟",opt:"· اختياري",
   q_risk:"واش جاوك شي أفكار باش تأذي راسك ولا ما بقيتيش باغي تعيش؟",no2:"لا",yes2:"إيه",
-  c_t:"ماشي بوحدك. إلا كنتي فخطر دابا، عيط ل:",c_141:"SAMU، الإسعاف",c_15:"الوقاية المدنية",c_19:"البوليس",c_112:"من البورطابل",
-  c_ss:"هضرة بالشات، فابور وبلا سمية، بالدارجة وبالفرنسية:",c_hop:"مستعجلات الطب النفسي 24/24: مستشفى ابن رشد (كازا)، مستشفى الرازي (سلا)",c_plan:"حل خطة الأمان ديالي",
+  c_t:"ماشي بوحدك. إلا كنتي فخطر دابا، عيط ل:",c_141:"Allô SAMU (تأكد واش خدام فالجهة ديالك)",c_15:"الإسعاف والوقاية المدنية",c_19:"البوليس",c_112:"من البورطابل",
+  c_note:"الرقم 141 معلن عليه فمرحلة تجريبية فجهة الرباط سلا القنيطرة؛ تأكد واش متوفر فجهتك. إلا ما قدرتيش تعيط، طلب من شي حد قريب يرافقك للمستعجلات القريبة.",c_plan:"حل خطة الأمان ديالي",
   q_note:"شي حاجة بغيتي تقولها فالجلسة الجاية",q_note_ph:"مثلا: تخاصمت مع ختي، صعيب عليا نركز فالقراية…",save:"سجّل نهاري",
   last7:"آخر 7 أيام",why_h:"علاش هاد الأسئلة؟",why:"المزاج والقلق والنعاس كل نهار، واستبيان معروف علميا كل سيمانة. اليومي كيبين التغييرات، والأسبوعي كيعطي نقطة اللي المعالج يقدر يقارنها من سيمانة لسيمانة.",
-  p_h:"خطة الأمان ديالي",p_sub:"كتعمرها مع المعالج ديالك فالجلسة. كتبقى فالتيليفون حتى بلا أنترنيت، للوقت اللي كيولي صعيب تفكر فيه. كتبعها بالترتيب: إلا ما كفاتش خطوة، دوز للي من بعدها.",
+  p_h:"خطة الأمان ديالي",p_sub:"عمرها مع المعالج ديالك. هاد الخطة كتتسجل فهاد المتصفح، ولكن ما كتسيفط حتى تنبيه وما كتعوضش المستعجلات.",
   p_st:"حالة الخطة",p_how:"كيفاش نستعملها",p_save:"سجّل الخطة"
 };
 const FR={};let lang=load('nafas-lang','fr');
@@ -475,7 +474,7 @@ function myQ(){const m=new Map(DEMO_ME_Q.map(r=>[r.type+r.date,r]));myQs.forEach
 const loadPlan=()=>load('nafas-plan',null);
 
 /* ---------- daily form ---------- */
-function buildScale(el,name,def){for(let i=1;i<=10;i++){const id=name+'-'+i;el.insertAdjacentHTML('beforeend',`<input type="radio" name="${name}" id="${id}" value="${i}" ${i===def?'checked':''}><label for="${id}">${i}</label>`)}}
+function buildScale(el,name,def){for(let i=1;i<=10;i++){const id=name+'-'+i;el.insertAdjacentHTML('beforeend',`<input type="radio" name="${name}" id="${id}" value="${i}" ${i===def?'checked':''}><label for="${id}">${i}</label>`)} }
 buildScale($('#scaleMood'),'mood',6);buildScale($('#scaleAnx'),'anx',4);
 TAGS_FR.forEach((t,i)=>$('#chips').insertAdjacentHTML('beforeend',`<input type="checkbox" id="tag-${i}" value="${t}"><label for="tag-${i}">${t}</label>`));
 document.querySelectorAll('input[name=risk]').forEach(r=>r.addEventListener('change',()=>{$('#crisis').hidden=document.querySelector('input[name=risk]:checked').value!=='oui'}));
@@ -536,11 +535,18 @@ const PLAN=[
   {k:'5',n:'5',fr:["Professionnels et urgences","Mon psychologue, mon psychiatre, et les numéros d'urgence.",""],da:["المختصين والمستعجلات","المعالج ديالي، الطبيب، ونمر المستعجلات.",""]},
   {k:'6',n:'6',fr:["Rendre mon environnement plus sûr","Ce que je fais, avec qui, pour éloigner ce qui pourrait me servir à me faire du mal.","Ex. confier mes médicaments à ma mère, qui me les donne jour par jour…"],da:["نخلي المحيط ديالي آمن","شنو ندير ومع من باش نبعد الحوايج الخطيرة.","مثلا: نعطي الدوا لماما وهي تعطيني كل نهار ديالو…"]},
 ];
-const PLAN5_DEFAULT="SAMU 141 · Police 19 · 112 depuis un mobile\nStop Silence (chat, darija / français) : stopsilence.net\nMon psychologue : \nMon psychiatre : ";
+const LEGACY_PLAN5_DEFAULT="SAMU 141 · Police 19 · 112 depuis un mobile\nStop Silence (chat, darija / français) : stopsilence.net\nMon psychologue : \nMon psychiatre : ";
+const PLAN5_DEFAULT={
+  fr:"Protection civile 15 · Police 19 · 112 depuis un mobile\nSAMU 141 (à vérifier dans ta région)\nMon psychologue : \nMon psychiatre : ",
+  da:"الوقاية المدنية 15 · البوليس 19 · 112 من البورطابل\nSAMU 141 (تأكد واش خدام فالجهة ديالك)\nالمعالج ديالي: \nالطبيب النفسي ديالي: "
+};
 function buildPlan(){
   const p=loadPlan(),f=(p&&p.f)||{},L=lang==='da'?'da':'fr';
+  if(p&&f['5']===LEGACY_PLAN5_DEFAULT.trim()){
+    f['5']=PLAN5_DEFAULT[L].trim();p.f=f;store('nafas-plan',p);
+  }
   const cur={};document.querySelectorAll('#planForm textarea').forEach(t=>cur[t.dataset.k]=t.value);
-  $('#planForm').innerHTML=PLAN.map(s=>{const [t,h,ph]=s[L];const val=(s.k in cur)?cur[s.k]:(f[s.k]!=null?f[s.k]:(s.k==='5'?PLAN5_DEFAULT:''));
+  $('#planForm').innerHTML=PLAN.map(s=>{const [t,h,ph]=s[L];const val=(s.k in cur)?cur[s.k]:(f[s.k]!=null?f[s.k]:(s.k==='5'?PLAN5_DEFAULT[L]:''));
     return`<div class="pstep${s.k==='r'?' reason':''}"><span class="sn" aria-hidden="true">${s.n}</span><div><label for="plan-${s.k}">${t}</label><span class="hint">${h}</span><textarea id="plan-${s.k}" data-k="${s.k}" placeholder="${esc(ph)}">${esc(val)}</textarea></div></div>`}).join('')
     +`<div class="row"><button class="btn" type="submit">${L==='da'?DA.p_save:'Enregistrer mon plan'}</button><span class="toast" id="planToast" role="status"></span></div>`;
   $('#ladder').innerHTML=PLAN.slice(1).map(s=>`<li><span>${s.n}</span><span>${s[L][0]}</span></li>`).join('');
@@ -550,7 +556,7 @@ $('#planForm').addEventListener('submit',e=>{
   e.preventDefault();const f={};document.querySelectorAll('#planForm textarea').forEach(t=>f[t.dataset.k]=t.value.trim());
   store('nafas-plan',{f,date:iso(Date.now())});$('#planToast').textContent=lang==='da'?'تسجلات الخطة.':'Plan enregistré.';renderPlanStatus();
 });
-function planFilled(p){if(!p)return 0;return PLAN.filter(s=>p.f[s.k]&&p.f[s.k]!==PLAN5_DEFAULT.trim()).length}
+function planFilled(p){if(!p)return 0;const defaults=[PLAN5_DEFAULT.fr.trim(),PLAN5_DEFAULT.da.trim()];return PLAN.filter(s=>p.f[s.k]&&!defaults.includes(p.f[s.k])).length}
 function renderPlanStatus(){
   const p=loadPlan(),n=planFilled(p);
   $('#planStatus').innerHTML=p?`<span class="pill ${n>=6?'good':'warn'}">${n} / 7 rubriques remplies</span><br><span style="display:inline-block;margin-top:8px">Mis à jour le ${fmt(p.date)}. Ton praticien voit s'il est rempli, pas son contenu, sauf si tu le partages en séance.</span>`
@@ -632,6 +638,7 @@ Traitement         ${P.filter(e=>e.med==='non').length} oubli(s) sur ${P.filter(
 Idées noires       ${risks.length?risks.length+' jour(s) : '+risks.map(e=>fmt(e.date)).join(', '):'aucune signalée'}
 Jour le plus bas   ${fmt(worst.date)} (humeur ${worst.mood})
 Jour le plus haut  ${fmt(best.date)} (humeur ${best.mood})
+
 Facteurs fréquents ${top||'—'}
 
 Plan de sécurité   ${p.plan?`${pf}/7 rubriques, mis à jour le ${fmtS(p.plan.date)}`:'pas encore rempli'}
