@@ -102,6 +102,11 @@ fieldset.qi legend>span:nth-child(2){flex:1;min-width:0}
 .qmiss{flex-basis:100%;padding-inline-start:34px;color:var(--crit);font-weight:600;font-size:13px}
 fieldset.qi[data-missing] .opts label{border-color:var(--crit)}
 .save-note{margin:0;font-size:13px;color:var(--ink-3)}
+/* Mes données */
+.liste{margin:0;padding-inline-start:18px;display:grid;gap:var(--sp-1);font-size:14px}
+.confirm{background:var(--sunk);border-radius:var(--r-m);padding:var(--sp-4)}
+.confirm p{margin:0 0 var(--sp-3)}
+[tabindex="-1"]:focus{outline:none}
 .crisis{background:var(--crit-soft);border:1px solid var(--crit);border-radius:12px;padding:16px;color:var(--ink)}
 .crisis strong{color:var(--crit)}
 .crisis ul{margin:8px 0 12px;padding-inline-start:18px;display:grid;gap:4px}
@@ -362,6 +367,7 @@ footer p{margin:0 0 8px}
 <section id="view-hist" hidden>
   <h2>Mon suivi</h2>
   <p class="sub">Les 30 jours précédents sont un exemple généré pour la démonstration. Tes propres saisies s'ajoutent à la fin.</p>
+  <p style="margin:0 0 var(--sp-4)"><button class="btn ghost small" type="button" data-donnees>Mes données : voir, télécharger, effacer</button></p>
   <div class="panel stack">
     <h3 style="margin:0">Scores hebdomadaires</h3>
     <div class="chart" id="scoreChart"></div>
@@ -376,6 +382,17 @@ footer p{margin:0 0 8px}
   <div class="panel" style="margin-top:16px">
     <h3>Journal</h3>
     <div class="tbl"><table><thead><tr><th>Date</th><th>Humeur</th><th>Anxiété</th><th>Sommeil</th><th>Traitement</th><th>Note</th></tr></thead><tbody id="journal"></tbody></table></div>
+  </div>
+  <div class="panel stack" id="donnees" tabindex="-1" style="margin-top:16px">
+    <h3 style="margin:0">Mes données</h3>
+    <p style="margin:0;color:var(--ink-2);font-size:14px">Voici tout ce que Nafas a enregistré dans ce navigateur, sur cet appareil. Rien n'est envoyé. Les 30 jours d'exemple ne sont pas enregistrés : ils sont recréés à chaque ouverture.</p>
+    <ul class="liste" id="donneesListe"></ul>
+    <div class="row"><button class="btn ghost" type="button" id="exportBtn">Télécharger (fichier JSON)</button><button class="btn ghost" type="button" id="effacerBtn">Tout effacer</button></div>
+    <p class="hint" style="margin:0">Le fichier téléchargé contient tes réponses : garde-le pour toi.</p>
+    <div class="confirm" id="effacerConfirm" tabindex="-1" hidden>
+      <p><strong>Tout effacer ?</strong> <span id="effacerPerte"></span></p>
+      <div class="row"><button class="btn ghost" type="button" id="effacerExport">Télécharger d'abord</button><button class="btn" type="button" id="effacerOui">Oui, tout effacer</button><button class="btn ghost" type="button" id="effacerNon">Annuler</button></div>
+    </div>
   </div>
 </section>
 
@@ -402,6 +419,7 @@ footer p{margin:0 0 8px}
 </main>
 
 <footer>
+  <p class="row"><button class="btn ghost small" type="button" data-donnees>Mes données</button></p>
   <p>Contact : <a href="mailto:rayanemoutaki1@gmail.com">rayanemoutaki1@gmail.com</a> · Retours bienvenus.</p>
   <p><strong>Prototype V1.</strong> Tes saisies restent dans ce navigateur, rien n'est envoyé. Ne pas utiliser avec de vrais patients : une version réelle exige une autorisation préalable de la CNDP (loi 09-08, données de santé) et un hébergement au Maroc.</p>
   <p>Les ressources de crise et leur disponibilité doivent être vérifiées localement avant le pilote. Le 0801 000 180 concerne les intoxications (Centre antipoison), pas une ligne d'écoute psychologique.</p>
@@ -715,6 +733,7 @@ function renderPlanV(){renderPlanStatus()}
 function renderHist(){
   const s=mySeries();$('#scoreChart').innerHTML=scoreChart(myQ());kpis($('#kpis30'),s.slice(-30),null);$('#chart30').innerHTML=chart(s.slice(-31));
   $('#journal').innerHTML=s.slice().reverse().map(e=>`<tr><td>${fmt(e.date)}${e.demo?'':' <span class="pill good">toi</span>'}</td><td class="n">${esc(e.mood)}</td><td class="n">${esc(e.anx)}</td><td class="n">${f1(e.sleep)} h</td><td>${e.med==='oui'?'Pris':e.med==='non'?'<span class="pill crit">Non pris</span>':'—'}</td><td>${e.risk==='oui'?'<span class="pill crit">Idées noires</span> ':''}${esc(e.note||e.tags.join(', '))}</td></tr>`).join('');
+  renderDonnees();
 }
 const ME={id:'me',name:'Vous (démo)',ini:'V',age:'19 ans',motif:'Anxiété, sommeil',get s(){return mySeries()},get q(){return myQ()},get plan(){return loadPlan()}};
 function renderRapport(){$('#reportTxt').textContent=reportText(ME)}
@@ -723,6 +742,43 @@ $('#copyBtn').addEventListener('click',()=>{
   const fb=()=>{const r=document.createRange();r.selectNodeContents($('#reportTxt'));const s=getSelection();s.removeAllRanges();s.addRange(r);$('#copyToast').textContent="Texte sélectionné, copie-le avec Ctrl+C.";};
   try{navigator.clipboard.writeText(t).then(done,fb)}catch(e){fb()}
 });
+
+/* ---------- mes données : voir, télécharger, effacer ---------- */
+/* Seules les clés « nafas-… » sont touchées : l'adresse warenee.github.io est partagée avec d'autres sites. */
+const nafasKeys=()=>{try{return Object.keys(localStorage).filter(k=>k.startsWith('nafas-')).sort()}catch(e){return[]}};
+const DONNEES={
+  'nafas-entries':['Journal',v=>`${v.length} jour(s) saisi(s)`],
+  'nafas-q':['Questionnaires',v=>`${v.length} réponse(s)`],
+  'nafas-plan':['Plan de sécurité',v=>`enregistré le ${fmt(v.date)}`],
+  'nafas-lang':['Réglage : langue',v=>v==='da'?'darija':'français'],
+  'nafas-theme':['Réglage : thème',v=>({auto:'Auto',light:'Clair',dark:'Sombre'})[v]||v],
+  'nafas-tab':['Réglage : dernier onglet ouvert',v=>($('#tab-'+v+' [data-i18n]')||{}).textContent||v],
+};
+function decrire(k){const [lab,f]=DONNEES[k]||[k,()=>'présent'];let d;try{d=f(load(k,null))}catch(e){d='présent'}return[lab,d]}
+function renderDonnees(){
+  const ks=nafasKeys();
+  $('#donneesListe').innerHTML=ks.length?ks.map(k=>{const [l,d]=decrire(k);return`<li><strong>${esc(l)}</strong> : ${esc(d)}</li>`}).join(''):'<li>Rien n\'est enregistré pour l\'instant.</li>';
+}
+function exporter(){
+  const d={};nafasKeys().forEach(k=>d[k]=load(k,null));
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify({app:'Nafas (démo)',exporte_le:new Date().toISOString(),donnees:d},null,2)],{type:'application/json'}));
+  a.download=`nafas-mes-donnees-${iso(Date.now())}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+document.querySelectorAll('[data-donnees]').forEach(b=>b.onclick=()=>{show('hist');$('#donnees').scrollIntoView();$('#donnees').focus()});
+$('#exportBtn').onclick=exporter;
+$('#effacerExport').onclick=exporter;
+$('#effacerBtn').onclick=()=>{
+  const ks=nafasKeys();
+  $('#effacerPerte').textContent=ks.length?`Seront effacés de ce navigateur, sans retour possible : ${ks.map(k=>decrire(k)[0].toLowerCase()).join(', ')}.${ks.includes('nafas-plan')?' Ton plan de sécurité sera perdu : télécharge tes données ou recopie-le avant.':''}`:'Rien n\'est enregistré pour l\'instant.';
+  $('#effacerConfirm').hidden=false;$('#effacerConfirm').focus();
+};
+$('#effacerNon').onclick=()=>{$('#effacerConfirm').hidden=true;$('#effacerBtn').focus()};
+$('#effacerOui').onclick=()=>{
+  nafasKeys().forEach(k=>{try{localStorage.removeItem(k)}catch(e){}});
+  if(nafasKeys().length){$('#effacerPerte').textContent='Impossible d\'effacer : ce navigateur bloque l\'accès aux données.';return}
+  location.reload();
+};
 
 /* ---------- praticien ---------- */
 const Ys=makeSeries(21,5,-1.5,{dip:3,risk:1}),Os=makeSeries(33,6,0,{nomed:.3}),Ss=makeSeries(45,4,3),Hs=makeSeries(58,6.5,-2.6);
