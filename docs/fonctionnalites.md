@@ -245,16 +245,18 @@ Principe commun : **d'abord des règles simples et transparentes, pas d'intellig
 
 Idées **1, 2, 3, 4, 5** et outil **B1**. Peu de code, aucun contenu clinique nouveau, et elles répondent aux inquiétudes probables des praticiens (vie privée, responsabilité).
 
-**Vérifications**
+**État au 26/09/2026** : tout est codé, en attente d'intégration par Warren, dans l'ordre : B1 (PR #23), idée 1 (#24), idée 2 (#25), idée 3 (#26), idée 4 (#27), idée 5 (#28). Les 3 phrases de l'écran d'accueil (#25) et le seuil de 3 jours (#26) restent à valider.
 
-- [ ] Données fictives uniquement ; aucune requête réseau (vérifier l'onglet « Réseau »).
-- [ ] « Tout effacer » demande confirmation et supprime vraiment tout (recharger la page pour vérifier).
-- [ ] L'export JSON s'ouvre et contient exactement ce qui est affiché.
-- [ ] L'écran d'accueil n'empêche jamais de voir le bandeau d'urgence.
-- [ ] Pastille « pas de saisie » grise, jamais rouge ; seuil documenté.
-- [ ] L'impression contient la mention « fictif » sur chaque page.
-- [ ] B1 bloque une PR de test qui modifie un numéro ou un texte de crise.
-- [ ] Texte de crise identique avant et après (comparaison automatique).
+**Vérifications** (cochées = vérifiées automatiquement dans Chrome sans écran, données inventées)
+
+- [x] Données fictives uniquement ; aucune requête réseau (vérifier l'onglet « Réseau »).
+- [x] « Tout effacer » demande confirmation et supprime vraiment tout (recharger la page pour vérifier).
+- [x] L'export JSON s'ouvre et contient exactement ce qui est affiché.
+- [x] L'écran d'accueil n'empêche jamais de voir le bandeau d'urgence.
+- [x] Pastille « pas de saisie » grise, jamais rouge ; seuil documenté.
+- [x] L'impression contient la mention « fictif » sur chaque page. *(Chrome seulement ; Safari et Firefox non vérifiés.)*
+- [ ] B1 bloque une PR de test qui modifie un numéro ou un texte de crise. *(Le script refuse ces changements dans ses 5 tests ; le blocage réel demande d'activer le contrôle obligatoire dans les réglages GitHub de `main`.)*
+- [x] Texte de crise identique avant et après (comparaison automatique).
 
 ### Phase 2 — Déroulé des séances et régularité (après la synthèse des entretiens)
 
