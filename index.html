@@ -7,6 +7,7 @@
 <meta name="description" content="Nafas : prototype de suivi entre les séances de psychothérapie. Données fictives uniquement.">
 <style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Nafas V1</title>
+<script>/* Thème choisi, appliqué avant l'affichage pour éviter un flash de l'autre thème. Sinon : réglage du téléphone. */try{var t=JSON.parse(localStorage.getItem('nafas-theme'));if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch(e){}</script>
 <style>
 :root{
   --ground:#F2F5F4; --surface:#FFFFFF; --sunk:#E6ECEA; --ink:#182624; --ink-2:#4A5B58; --ink-3:#5A6966;
@@ -74,6 +75,7 @@ form.entry{display:grid;gap:22px}
 .scale-ends{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-3);margin-top:4px}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 input[type=number],textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--ground);border:1px solid var(--field-line);border-radius:10px;padding:10px 12px}
+input[aria-invalid="true"],textarea[aria-invalid="true"]{border-color:var(--crit);box-shadow:0 0 0 1px var(--crit)}
 input[type=number]{width:110px;font-family:var(--mono)}
 textarea{width:100%;min-height:80px;resize:vertical}
 .chips{display:flex;gap:6px;flex-wrap:wrap}
@@ -184,6 +186,11 @@ footer p{margin:0 0 8px}
     <div class="lang" role="group" aria-label="Langue">
       <button type="button" id="lang-fr" data-lang="fr" aria-pressed="true">Français</button>
       <button type="button" id="lang-da" data-lang="da" aria-pressed="false">الدارجة</button>
+    </div>
+    <div class="lang" role="group" aria-label="Thème" id="theme">
+      <button type="button" data-theme-set="auto" aria-pressed="true" title="Suit le réglage du téléphone">Auto</button>
+      <button type="button" data-theme-set="light" aria-pressed="false">Clair</button>
+      <button type="button" data-theme-set="dark" aria-pressed="false">Sombre</button>
     </div>
     <span class="demo-pill">Prototype V1 · démo par rayane</span>
   </div>
@@ -429,11 +436,17 @@ function applyLang(){
   ['#nav','#disc','#view-jour','#view-plan','.brand','#qCrisis'].forEach(s=>{const el=$(s);el.dir=rtl?'rtl':'ltr';el.lang=rtl?'ar-MA':'fr'});
   $('#daNote').hidden=!rtl;
   const tags=rtl?TAGS_DA:TAGS_FR;document.querySelectorAll('#chips label').forEach((l,i)=>l.textContent=tags[i]);
-  document.querySelectorAll('.lang button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===lang));
+  document.querySelectorAll('button[data-lang]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===lang));
   buildPlan();
   if(!$('#qCrisis').hidden)$('#qCrisis').innerHTML=$('#crisis').innerHTML;
 }
-document.querySelectorAll('.lang button').forEach(b=>b.onclick=()=>{lang=b.dataset.lang;store('nafas-lang',lang);applyLang();renderAll()});
+document.querySelectorAll('button[data-lang]').forEach(b=>b.onclick=()=>{lang=b.dataset.lang;store('nafas-lang',lang);applyLang();renderAll()});
+
+/* ---------- thème : auto (réglage du téléphone), clair ou sombre ---------- */
+function applyTheme(t){if(t!=='light'&&t!=='dark')t='auto';if(t==='auto')delete document.documentElement.dataset.theme;else document.documentElement.dataset.theme=t;
+  document.querySelectorAll('button[data-theme-set]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.themeSet===t))}
+applyTheme(load('nafas-theme','auto'));
+document.querySelectorAll('button[data-theme-set]').forEach(b=>b.onclick=()=>{store('nafas-theme',b.dataset.themeSet);applyTheme(b.dataset.themeSet)});
 
 /* ---------- questionnaires ---------- */
 const QDEF={
@@ -502,7 +515,8 @@ document.querySelectorAll('input[name=risk]').forEach(r=>r.addEventListener('cha
 $('#entryForm').addEventListener('submit',e=>{
   e.preventDefault();
   const v=n=>document.querySelector(`input[name=${n}]:checked`).value,sleep=parseFloat($('#sleep').value);
-  if(isNaN(sleep)||sleep<0||sleep>16){$('#toast').style.color='var(--crit)';$('#toast').textContent="Indique un sommeil entre 0 et 16 heures.";return}
+  if(isNaN(sleep)||sleep<0||sleep>16){$('#toast').style.color='var(--crit)';$('#toast').textContent="Indique un sommeil entre 0 et 16 heures.";$('#sleep').setAttribute('aria-invalid','true');$('#sleep').focus();return}
+  $('#sleep').removeAttribute('aria-invalid');
   const entry={date:iso(Date.now()),mood:+v('mood'),anx:+v('anx'),sleep,med:v('med'),risk:v('risk'),
     tags:[...document.querySelectorAll('#chips input:checked')].map(c=>c.value),note:$('#noteTxt').value.trim(),demo:false};
   const next=mine.filter(x=>x.date!==entry.date).concat(entry);
@@ -535,7 +549,7 @@ $('#qForm').addEventListener('change',liveQ);
 document.querySelectorAll('#qSeg button').forEach(b=>b.onclick=()=>{qType=b.dataset.q;buildQ()});
 $('#qForm').addEventListener('submit',e=>{
   e.preventDefault();const a=answers(),miss=a.filter(x=>x===null).length;
-  if(miss){$('#qToast').style.color='var(--crit)';$('#qToast').textContent=`Il manque ${miss} réponse${miss>1?'s':''} pour calculer le score.`;return}
+  if(miss){$('#qToast').style.color='var(--crit)';$('#qToast').textContent=`Il manque ${miss} réponse${miss>1?'s':''} pour calculer le score.`;document.querySelector(`input[name=qi${a.indexOf(null)}]`).focus();return}
   const rec={date:iso(Date.now()),type:qType,items:a,demo:false};
   const next=myQs.filter(r=>!(r.type===rec.type&&r.date===rec.date)).concat(rec);
   if(!store('nafas-q',next)){$('#qToast').style.color='var(--crit)';$('#qToast').textContent=SAVE_FAIL;return}
