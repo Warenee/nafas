@@ -235,7 +235,6 @@ footer p{margin:0 0 8px}
           <li><span class="num">141</span> — <span data-i18n="c_141">SAMU, urgences médicales</span></li>
           <li><span class="num">15</span> — <span data-i18n="c_15">Protection civile</span></li>
           <li><span class="num">19</span> — <span data-i18n="c_19">Police secours</span> · <span class="num">112</span> <span data-i18n="c_112">depuis un mobile</span></li>
-          <li><strong style="color:inherit">Stop Silence</strong> (Sourire de Reda) — <span data-i18n="c_ss">écoute par chat, gratuite et anonyme, en darija et en français :</span> <span class="num">stopsilence.net</span></li>
           <li><span data-i18n="c_hop">Urgences psychiatriques 24h/24 : CHU Ibn Rochd (Casablanca), Hôpital Ar-Razi (Salé)</span></li>
         </ul>
         <button class="btn crit small" type="button" data-go="plan" data-i18n="c_plan">Ouvrir mon plan de sécurité</button>
@@ -397,7 +396,7 @@ const DA={
   q_tags:"شنو اللي تقل عليك اليوم؟",opt:"· اختياري",
   q_risk:"واش جاوك شي أفكار باش تأذي راسك ولا ما بقيتيش باغي تعيش؟",no2:"لا",yes2:"إيه",
   c_t:"ماشي بوحدك. إلا كنتي فخطر دابا، عيط ل:",c_141:"SAMU، الإسعاف",c_15:"الوقاية المدنية",c_19:"البوليس",c_112:"من البورطابل",
-  c_ss:"هضرة بالشات، فابور وبلا سمية، بالدارجة وبالفرنسية:",c_hop:"مستعجلات الطب النفسي 24/24: مستشفى ابن رشد (كازا)، مستشفى الرازي (سلا)",c_plan:"حل خطة الأمان ديالي",
+  c_hop:"مستعجلات الطب النفسي 24/24: مستشفى ابن رشد (كازا)، مستشفى الرازي (سلا)",c_plan:"حل خطة الأمان ديالي",
   q_note:"شي حاجة بغيتي تقولها فالجلسة الجاية",q_note_ph:"مثلا: تخاصمت مع ختي، صعيب عليا نركز فالقراية…",save:"سجّل نهاري",
   last7:"آخر 7 أيام",why_h:"علاش هاد الأسئلة؟",why:"المزاج والقلق والنعاس كل نهار، واستبيان معروف علميا كل سيمانة. اليومي كيبين التغييرات، والأسبوعي كيعطي نقطة اللي المعالج يقدر يقارنها من سيمانة لسيمانة.",
   p_h:"خطة الأمان ديالي",p_sub:"كتعمرها مع المعالج ديالك فالجلسة. كتبقى فالتيليفون حتى بلا أنترنيت، للوقت اللي كيولي صعيب تفكر فيه. كتبعها بالترتيب: إلا ما كفاتش خطوة، دوز للي من بعدها.",
@@ -472,7 +471,9 @@ const DEMO_ME_Q=makeWeekly(DEMO_ME,11);
 let mine=load('nafas-entries',[]),myQs=load('nafas-q',[]);
 function mySeries(){const m=new Map(DEMO_ME.map(e=>[e.date,e]));mine.forEach(e=>m.set(e.date,e));return[...m.values()].sort((a,b)=>a.date<b.date?-1:1)}
 function myQ(){const m=new Map(DEMO_ME_Q.map(r=>[r.type+r.date,r]));myQs.forEach(r=>m.set(r.type+r.date,r));return[...m.values()]}
-const loadPlan=()=>load('nafas-plan',null);
+/* Retire l'ancienne ligne Stop Silence (service arrêté, voir docs/verification-ressources-crise.md) des plans déjà enregistrés. */
+const OLD_SS_LINE="Stop Silence (chat, darija / français) : stopsilence.net\n";
+const loadPlan=()=>{const p=load('nafas-plan',null);if(p&&p.f&&typeof p.f['5']==='string')p.f['5']=p.f['5'].replace(OLD_SS_LINE,'');return p};
 
 /* ---------- daily form ---------- */
 function buildScale(el,name,def){for(let i=1;i<=10;i++){const id=name+'-'+i;el.insertAdjacentHTML('beforeend',`<input type="radio" name="${name}" id="${id}" value="${i}" ${i===def?'checked':''}><label for="${id}">${i}</label>`)}}
@@ -536,7 +537,7 @@ const PLAN=[
   {k:'5',n:'5',fr:["Professionnels et urgences","Mon psychologue, mon psychiatre, et les numéros d'urgence.",""],da:["المختصين والمستعجلات","المعالج ديالي، الطبيب، ونمر المستعجلات.",""]},
   {k:'6',n:'6',fr:["Rendre mon environnement plus sûr","Ce que je fais, avec qui, pour éloigner ce qui pourrait me servir à me faire du mal.","Ex. confier mes médicaments à ma mère, qui me les donne jour par jour…"],da:["نخلي المحيط ديالي آمن","شنو ندير ومع من باش نبعد الحوايج الخطيرة.","مثلا: نعطي الدوا لماما وهي تعطيني كل نهار ديالو…"]},
 ];
-const PLAN5_DEFAULT="SAMU 141 · Police 19 · 112 depuis un mobile\nStop Silence (chat, darija / français) : stopsilence.net\nMon psychologue : \nMon psychiatre : ";
+const PLAN5_DEFAULT="SAMU 141 · Police 19 · 112 depuis un mobile\nMon psychologue : \nMon psychiatre : ";
 function buildPlan(){
   const p=loadPlan(),f=(p&&p.f)||{},L=lang==='da'?'da':'fr';
   const cur={};document.querySelectorAll('#planForm textarea').forEach(t=>cur[t.dataset.k]=t.value);
