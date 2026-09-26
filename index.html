@@ -197,6 +197,17 @@ footer p{margin:0 0 8px}
 @media (max-width:480px){.panel{padding:var(--sp-4)}h2{font-size:22px}}
 @media (max-width:480px){.kpis{grid-template-columns:1fr 1fr}.scale label{height:36px;font-size:13px}.opts{padding-inline-start:0}}
 @media (pointer:coarse){.scale label{height:var(--tap)}}
+/* Impression : seulement le rapport, noir sur blanc, mention « démo » sur chaque page (filigrane fixe, répété par le navigateur). */
+#impression{display:none}
+@media print{
+  @page{margin:15mm}
+  body{background:#fff;color:#000;padding:0}
+  .wrap,.skip{display:none!important}
+  #impression{display:block}
+  #impression .entete{font:700 12pt var(--body);border-bottom:1px solid #000;padding-bottom:4pt;margin:0 0 10pt}
+  #impression pre{font:10pt/1.45 var(--mono);white-space:pre-wrap;margin:0}
+  #impression .filigrane{position:fixed;top:45%;left:0;right:0;text-align:center;font:700 40pt var(--body);color:#000;opacity:.08;transform:rotate(-30deg)}
+}
 </style>
 </head>
 <body>
@@ -416,7 +427,7 @@ footer p{margin:0 0 8px}
   <p class="sub">Un résumé des 14 derniers jours avec les derniers scores, prêt à montrer à ton praticien.</p>
   <div class="panel stack">
     <div class="report" id="reportTxt"></div>
-    <div class="row"><button class="btn" id="copyBtn" type="button">Copier le résumé</button><span class="toast" id="copyToast" role="status"></span></div>
+    <div class="row"><button class="btn" id="copyBtn" type="button">Copier le résumé</button><button class="btn ghost" type="button" data-print>Imprimer</button><span class="toast" id="copyToast" role="status"></span></div>
   </div>
 </section>
 
@@ -438,6 +449,12 @@ footer p{margin:0 0 8px}
   <p><strong>Prototype V1.</strong> Tes saisies restent dans ce navigateur, rien n'est envoyé. Ne pas utiliser avec de vrais patients : une version réelle exige une autorisation préalable de la CNDP (loi 09-08, données de santé) et un hébergement au Maroc.</p>
   <p>Les ressources de crise et leur disponibilité doivent être vérifiées localement avant le pilote. Le 0801 000 180 concerne les intoxications (Centre antipoison), pas une ligne d'écoute psychologique.</p>
 </footer>
+</div>
+
+<div id="impression" aria-hidden="true">
+  <p class="entete">Nafas · Données fictives — démo</p>
+  <pre id="impTxt"></pre>
+  <p class="filigrane">Données fictives — démo</p>
 </div>
 
 <script>
@@ -846,7 +863,8 @@ function renderPro(){
   <h3 style="font-size:15px;margin-top:14px">14 derniers jours</h3>
   <div class="kpis" id="ptK"></div>
   <div class="chart">${chart(p.s.slice(-14),{h:220,W:480})}</div>
-  <div class="report" style="margin-top:12px;max-height:260px">${esc(reportText(p))}</div>`;
+  <div class="report" style="margin-top:12px;max-height:260px">${esc(reportText(p))}</div>
+  <div class="row" style="margin-top:12px"><button class="btn ghost small" type="button" data-print>Imprimer le rapport</button></div>`;
   kpis($('#ptK'),p.s.slice(-7),p.s.slice(-14,-7));
   $('#revuBtn').onclick=()=>{const r=load('nafas-revu',{});r[p.id]=iso(Date.now());if(!store('nafas-revu',r)){$('#revuBtn').nextElementSibling.textContent=SAVE_FAIL;return}renderPro();$('#revuBtn').focus()};
 }
@@ -867,6 +885,9 @@ $('#nav').addEventListener('keydown',e=>{
   e.preventDefault();j=(j+n)%n;tabBtns[j].focus();show(tabBtns[j].dataset.view);
 });
 function renderAll(){views[cur]()}
+/* Impression : le rapport de l'onglet ouvert (le mien, ou celui du patient choisi dans l'espace praticien). */
+addEventListener('beforeprint',()=>{$('#impTxt').textContent=cur==='rapport'?reportText(ME):cur==='pro'?reportText(PATIENTS.find(x=>x.id===sel)):'Ouvre « Rapport séance » ou une fiche patient pour imprimer un rapport.'});
+document.addEventListener('click',e=>{if(e.target.closest('[data-print]'))window.print()});
 applyLang();
 const h=location.hash.slice(1);let start=load('nafas-tab','jour');if(Object.hasOwn(views,h))start=h;if(!Object.hasOwn(views,start))start='jour';
 show(start);
