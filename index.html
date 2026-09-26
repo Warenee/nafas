@@ -380,7 +380,9 @@ const f1=n=>n.toFixed(1).replace('.',',');
 function esc(t){return String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function rng(seed){let s=seed;return()=>{s=(s*9301+49297)%233280;return s/233280}}
 function load(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
-function store(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+/* Renvoie true si la donnée est bien enregistrée, false si le navigateur a bloqué le stockage. */
+function store(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}}
+const SAVE_FAIL="Impossible d'enregistrer : ce navigateur bloque le stockage des données. Rien n'a été sauvegardé.";
 
 /* ---------- i18n ---------- */
 const TAGS_FR=["Fac / examens","Famille","Relations","Argent","Solitude","Santé physique","Travail","Rien de particulier"];
@@ -485,7 +487,9 @@ $('#entryForm').addEventListener('submit',e=>{
   if(isNaN(sleep)||sleep<0||sleep>16){$('#toast').style.color='var(--crit)';$('#toast').textContent="Indique un sommeil entre 0 et 16 heures.";return}
   const entry={date:iso(Date.now()),mood:+v('mood'),anx:+v('anx'),sleep,med:v('med'),risk:v('risk'),
     tags:[...document.querySelectorAll('#chips input:checked')].map(c=>c.value),note:$('#noteTxt').value.trim(),demo:false};
-  mine=mine.filter(x=>x.date!==entry.date);mine.push(entry);store('nafas-entries',mine);
+  const next=mine.filter(x=>x.date!==entry.date).concat(entry);
+  if(!store('nafas-entries',next)){$('#toast').style.color='var(--crit)';$('#toast').textContent=SAVE_FAIL;return}
+  mine=next;
   $('#toast').style.color='var(--good)';
   $('#toast').textContent=lang==='da'?'تسجل.':(entry.risk==='oui'?"Enregistré. Les numéros ci-dessus sont là si besoin.":"Journée enregistrée.");
   renderAll();
@@ -515,7 +519,9 @@ $('#qForm').addEventListener('submit',e=>{
   e.preventDefault();const a=answers(),miss=a.filter(x=>x===null).length;
   if(miss){$('#qToast').style.color='var(--crit)';$('#qToast').textContent=`Il manque ${miss} réponse${miss>1?'s':''} pour calculer le score.`;return}
   const rec={date:iso(Date.now()),type:qType,items:a,demo:false};
-  myQs=myQs.filter(r=>!(r.type===rec.type&&r.date===rec.date));myQs.push(rec);store('nafas-q',myQs);
+  const next=myQs.filter(r=>!(r.type===rec.type&&r.date===rec.date)).concat(rec);
+  if(!store('nafas-q',next)){$('#qToast').style.color='var(--crit)';$('#qToast').textContent=SAVE_FAIL;return}
+  myQs=next;
   $('#qToast').style.color='var(--good)';
   $('#qToast').textContent=`${QDEF[qType].name} enregistré : ${qScore(rec)} / ${QDEF[qType].max}.`+(qType==='phq'&&a[8]>0?" Ta réponse à la question 9 apparaîtra en priorité chez ton praticien.":"");
   renderQHist();renderDue();
@@ -548,7 +554,8 @@ function buildPlan(){
 }
 $('#planForm').addEventListener('submit',e=>{
   e.preventDefault();const f={};document.querySelectorAll('#planForm textarea').forEach(t=>f[t.dataset.k]=t.value.trim());
-  store('nafas-plan',{f,date:iso(Date.now())});$('#planToast').textContent=lang==='da'?'تسجلات الخطة.':'Plan enregistré.';renderPlanStatus();
+  if(!store('nafas-plan',{f,date:iso(Date.now())})){$('#planToast').style.color='var(--crit)';$('#planToast').textContent=SAVE_FAIL;return}
+  $('#planToast').style.color='';$('#planToast').textContent=lang==='da'?'تسجلات الخطة.':'Plan enregistré.';renderPlanStatus();
 });
 function planFilled(p){if(!p)return 0;return PLAN.filter(s=>p.f[s.k]&&p.f[s.k]!==PLAN5_DEFAULT.trim()).length}
 function renderPlanStatus(){
