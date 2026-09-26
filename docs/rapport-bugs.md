@@ -12,12 +12,25 @@ Relecture complète de `index.html` (commit `951adec`, branche `main`) le **26 s
 
 Colonne « Qui décide » : **W** = Warren seul (technique) ; **W + C** = Warren avec l'avis d'un clinicien (touche au contenu clinique ou de crise).
 
-## Déjà traités sur une branche (en attente d'intégration)
+## État au 26/09/2026 (fin de journée, `main` = `7fe0ad1`)
 
-| Point | Branche |
+Vérifié dans le code de `main`. Le tableau des bugs ci-dessous reste la version d'origine, avec ses numéros de ligne d'alors.
+
+| Point | État |
 |---|---|
-| Lien de crise Stop Silence vers un site sans rapport | `fix/retrait-stop-silence` |
-| Paragraphe du pied de page mal ouvert | `fix/pied-de-page` |
+| Stop Silence, pied de page | ✅ Corrigés (PR #6, #7) |
+| Bug 1 (date à minuit) | ✅ Corrigé (PR #9) |
+| Bug 2 (polices Google) | ✅ Corrigé (PR #15) : plus aucune requête externe |
+| Bug 4 (faux « enregistré ») | ✅ Corrigé (PR #10) |
+| Bug 5 (encadré de crise figé) | ✅ Corrigé (PR #13) |
+| Bug 9 (contact cliquable) | ✅ Corrigé (PR #16) |
+| Bug 10 (accessibilité des onglets) | ✅ Corrigé (PR #14) |
+| Audit A1, A2 (échappement du journal, noms d'onglets) | ✅ Corrigés (PR #17) |
+| Bugs 3, 6, 7 | ⏳ Ouverts : attendent les relecteurs (W + C) |
+| Bugs 8, 11 | ⏳ Ouverts (W) |
+| **Migration du plan (étape 5)** | ⏳ **Ouvert, nouveau.** La conversion des anciens plans ajoutée par la PR #2 ne se déclenche jamais : `LEGACY_PLAN5_DEFAULT` contient encore la ligne Stop Silence, que `loadPlan()` retire avant la comparaison. Un plan enregistré avant la PR #2 garde « SAMU 141 » sans « à vérifier dans ta région », et cette valeur par défaut compte comme une rubrique remplie. Correction d'une ligne : retirer la ligne Stop Silence de `LEGACY_PLAN5_DEFAULT`. (W, touche au plan de sécurité) |
+
+Autres points ouverts : voir l'issue #1 (anomalies du test mobile) et l'audit sécurité B1 à B6 (stockage en clair, origine partagée `warenee.github.io`, pas de CSP, pas de suppression des données, espace praticien sans connexion, rapport copié dans le presse-papiers). B7 (« disponible sans connexion ») n'est plus d'actualité : la PR #2 a retiré cette phrase.
 
 ## Bugs trouvés
 

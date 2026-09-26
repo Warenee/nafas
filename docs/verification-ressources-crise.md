@@ -39,9 +39,25 @@ Non présent dans l'app, pour information : la même source indique **177 pour l
 | 141 « en phase pilote à Rabat-Salé-Kénitra » | **En partie soutenu** : c'est la réforme du SAMU qui est pilotée dans cette région [7] ; le 141 existe depuis 2020 [5]. |
 | Nouvelles phrases de crise en darija | **Non relues** : à faire valider (voir `docs/relecture/`). |
 
+## État en ligne après la fusion de la PR #2 (relevé le 26/09/2026, `main` = `7fe0ad1`)
+
+La PR #2 a été fusionnée le 26/09/2026. Voici ce que l'app affiche maintenant, comparé aux sources ci-dessus. Cette section décrit l'écart ; elle ne change rien dans l'app.
+
+| Ce que l'app affiche | Accord avec les sources | À décider par |
+|---|---|---|
+| Stop Silence retiré | ✅ Soutenu [1–4] | — |
+| Bandeau d'urgence : **15 · 19 · 112** (le 141 n'y est plus) | ⚠️ Choix possible, les deux numéros existent [5][8] | Warren + clinicien |
+| « 15 — **SAMU et pompiers** (Protection civile) » (français) | ❌ Pas soutenu : la source dit « pompiers, ambulance », pas SAMU [8]. La version darija dit « الإسعاف والوقاية المدنية » (ambulance et Protection civile) : **le français et la darija ne disent pas la même chose.** | Warren + clinicien |
+| « 141 — Allô SAMU (vérifie la disponibilité dans ta région) » et la note sur la phase pilote à Rabat-Salé-Kénitra | ⚠️ En partie : c'est la réforme du SAMU qui est pilotée dans cette région [7] ; le 141 existe depuis 2020 [5] | Warren + clinicien |
+| Urgences psychiatriques (CHU Ibn Rochd, Ar-Razi) retirées | ⚠️ Ibn Rochd était confirmé 24 h/24 [9] | Warren + clinicien |
+| « 112 depuis un mobile » | ⚠️ « Depuis un mobile » toujours non confirmé [8] | Personne compétente au Maroc |
+| Nouvelles phrases de crise en darija | ❓ Non relues | Relecteurs darija (`docs/relecture/`) |
+
+Dans son commentaire du 26/09/2026 sur l'issue #1, la PR #2 devait rester « non fusionnée en attendant une relecture clinique ». **Cette relecture n'est pas documentée dans le dépôt.**
+
 ## Ce qui reste à faire (par des humains)
 
-1. **Stop Silence** : décider avec Warren (et si possible un clinicien) de retirer ce lien de l'app au plus vite. C'est le point le plus urgent.
+1. ~~**Stop Silence** : retirer ce lien de l'app.~~ Fait (PR #6 et #2). Reste la migration des anciens plans enregistrés, qui ne marche pas encore (voir `docs/rapport-bugs.md`).
 2. Faire confirmer par une personne compétente au Maroc (clinicien, médecin urgentiste, SAMU) :
    - si le 141 répond dans toutes les régions et à toute heure ;
    - si le 112 fonctionne depuis un fixe comme depuis un mobile ;
