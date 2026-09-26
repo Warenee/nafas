@@ -107,6 +107,10 @@ fieldset.qi[data-missing] .opts label{border-color:var(--crit)}
 .confirm{background:var(--sunk);border-radius:var(--r-m);padding:var(--sp-4)}
 .confirm p{margin:0 0 var(--sp-3)}
 [tabindex="-1"]:focus{outline:none}
+/* Écran d'accueil « Comment ça marche » : sous le bandeau d'urgence, rien à valider pour utiliser l'app */
+.accueil{margin-top:var(--sp-3)}
+.accueil h2{font-size:20px}
+.accueil ul{margin:var(--sp-2) 0 var(--sp-4);padding-inline-start:18px;display:grid;gap:var(--sp-2);max-width:62ch}
 .crisis{background:var(--crit-soft);border:1px solid var(--crit);border-radius:12px;padding:16px;color:var(--ink)}
 .crisis strong{color:var(--crit)}
 .crisis ul{margin:8px 0 12px;padding-inline-start:18px;display:grid;gap:4px}
@@ -189,7 +193,7 @@ footer p{margin:0 0 8px}
 /* Mouvement doux, seulement si la personne ne l'a pas désactivé. L'encadré de crise apparaît sans animation. */
 @media (prefers-reduced-motion:no-preference){nav.tabs button,.lang button,.btn,.scale label,.chips label,.yn label,.opts label,.seg button,.pt{transition:background-color var(--dur),border-color var(--dur),box-shadow var(--dur),color var(--dur)}}
 /* Cibles tactiles d'au moins 44 px sur écran tactile */
-@media (pointer:coarse){.lang button,.btn.small,.chips label,.yn label,.seg button,nav.tabs button{min-height:var(--tap);display:inline-flex;align-items:center;justify-content:center}.seg button{flex-direction:column}}
+@media (pointer:coarse){.lang button,.btn,.chips label,.yn label,.seg button,nav.tabs button{min-height:var(--tap);display:inline-flex;align-items:center;justify-content:center}.seg button{flex-direction:column}}
 @media (max-width:480px){.panel{padding:var(--sp-4)}h2{font-size:22px}}
 @media (max-width:480px){.kpis{grid-template-columns:1fr 1fr}.scale label{height:36px;font-size:13px}.opts{padding-inline-start:0}}
 @media (pointer:coarse){.scale label{height:var(--tap)}}
@@ -218,6 +222,16 @@ footer p{margin:0 0 8px}
 
 <div class="disc" id="disc"><span data-i18n="disc">Nafas n'est pas un service d'urgence et ton praticien ne lit pas tes réponses en continu. En danger maintenant :</span> <b>15</b> · <b>19</b> · <b>112</b> <span>(<span data-i18n="c_112">depuis un mobile</span>)</span></div>
 <div class="danote" id="daNote" hidden>الترجمة للدارجة هنا مثال، خاصها تتصادق من عند مختصين. الاستبيانات (PHQ-9…) باقيين بالفرنسية حتى تكون نسخة بالدارجة مصادق عليها علميا.</div>
+
+<section class="panel accueil" id="accueil" tabindex="-1" aria-labelledby="accueilT" hidden>
+  <h2 id="accueilT">Comment ça marche</h2>
+  <ul>
+    <li><strong>Ce qui est enregistré :</strong> tes réponses (journal, questionnaires, plan de sécurité) restent dans ce navigateur, sur cet appareil. Rien n'est envoyé.</li>
+    <li><strong>Qui les voit :</strong> dans cette démo, aucun praticien. L'« Espace praticien » montre des patients fictifs. Utilise seulement des données inventées.</li>
+    <li><strong>Ce que Nafas ne fait pas :</strong> pas de diagnostic, aucune alerte envoyée. Ce n'est pas un service d'urgence : les numéros sont dans le bandeau en haut de la page.</li>
+  </ul>
+  <button class="btn" type="button" id="accueilOk">J'ai compris</button>
+</section>
 
 <nav class="tabs" role="tablist" id="nav">
   <button role="tab" id="tab-jour" aria-selected="true" data-view="jour"><span data-i18n="t_jour">Aujourd'hui</span></button>
@@ -419,7 +433,7 @@ footer p{margin:0 0 8px}
 </main>
 
 <footer>
-  <p class="row"><button class="btn ghost small" type="button" data-donnees>Mes données</button></p>
+  <p class="row"><button class="btn ghost small" type="button" data-donnees>Mes données</button><button class="btn ghost small" type="button" id="accueilLien">Comment ça marche</button></p>
   <p>Contact : <a href="mailto:rayanemoutaki1@gmail.com">rayanemoutaki1@gmail.com</a> · Retours bienvenus.</p>
   <p><strong>Prototype V1.</strong> Tes saisies restent dans ce navigateur, rien n'est envoyé. Ne pas utiliser avec de vrais patients : une version réelle exige une autorisation préalable de la CNDP (loi 09-08, données de santé) et un hébergement au Maroc.</p>
   <p>Les ressources de crise et leur disponibilité doivent être vérifiées localement avant le pilote. Le 0801 000 180 concerne les intoxications (Centre antipoison), pas une ligne d'écoute psychologique.</p>
@@ -752,6 +766,7 @@ const DONNEES={
   'nafas-plan':['Plan de sécurité',v=>`enregistré le ${fmt(v.date)}`],
   'nafas-lang':['Réglage : langue',v=>v==='da'?'darija':'français'],
   'nafas-theme':['Réglage : thème',v=>({auto:'Auto',light:'Clair',dark:'Sombre'})[v]||v],
+  'nafas-accueil':['Écran « Comment ça marche »',()=>'déjà lu'],
   'nafas-tab':['Réglage : dernier onglet ouvert',v=>($('#tab-'+v+' [data-i18n]')||{}).textContent||v],
 };
 function decrire(k){const [lab,f]=DONNEES[k]||[k,()=>'présent'];let d;try{d=f(load(k,null))}catch(e){d='présent'}return[lab,d]}
@@ -767,6 +782,11 @@ function exporter(){
 }
 document.querySelectorAll('[data-donnees]').forEach(b=>b.onclick=()=>{show('hist');$('#donnees').scrollIntoView();$('#donnees').focus()});
 $('#exportBtn').onclick=exporter;
+
+/* ---------- écran d'accueil « Comment ça marche » ---------- */
+$('#accueil').hidden=load('nafas-accueil',false)===true;
+$('#accueilOk').onclick=()=>{store('nafas-accueil',true);$('#accueil').hidden=true;$('#main').focus()};
+$('#accueilLien').onclick=()=>{$('#accueil').hidden=false;$('#accueil').scrollIntoView();$('#accueil').focus()};
 $('#effacerExport').onclick=exporter;
 $('#effacerBtn').onclick=()=>{
   const ks=nafasKeys();
