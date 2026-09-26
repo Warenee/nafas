@@ -22,3 +22,4 @@ Projet étudiant en psychologie, ESP Casablanca.
 | [`docs/entretiens/`](docs/entretiens/README.md) | Kit d'entretiens avec des praticiens |
 | [`docs/rapport-bugs.md`](docs/rapport-bugs.md) | Rapport de bugs de `index.html` |
 | [`docs/verification-ressources-crise.md`](docs/verification-ressources-crise.md) | Vérification des ressources de crise (non confirmée localement) |
+| [`docs/crise-reference.json`](docs/crise-reference.json) | Textes de crise de référence, contrôlés à chaque pull request par `outils/verif-crise.mjs` |

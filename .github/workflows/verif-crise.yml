@@ -1,0 +1,16 @@
+# Lance le vérificateur des textes de crise sur chaque pull request.
+# Il signale seulement : il ne modifie jamais le dépôt.
+name: Textes de crise
+on: pull_request
+permissions:
+  contents: read
+jobs:
+  verif-crise:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test outils/verif-crise.test.mjs
+      - run: node outils/verif-crise.mjs
