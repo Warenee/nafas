@@ -179,6 +179,9 @@ fieldset.qi legend{font-weight:600;margin-bottom:var(--sp-2);display:flex;gap:10
 .ladder li span:first-child{font:500 12px var(--mono);color:var(--accent);padding-top:2px}
 footer{margin-top:var(--sp-6);font-size:13px;color:var(--ink-3);max-width:75ch}
 footer p{margin:0 0 var(--sp-2)}
+footer details{margin-block:var(--sp-4);border:1px solid var(--line);border-radius:var(--r-m);padding:var(--sp-3) var(--sp-4);background:var(--surface);color:var(--ink-2)}
+footer summary{cursor:pointer;font-weight:600;color:var(--ink)}
+footer details ul{margin:var(--sp-2) 0 var(--sp-3);padding-inline-start:var(--sp-5)}
 [dir="rtl"] .scale-ends,[dir="rtl"] .row{direction:rtl}
 /* Mouvement doux, seulement si la personne ne l'a pas désactivé. L'encadré de crise apparaît sans animation. */
 @media (prefers-reduced-motion:no-preference){nav.tabs button,.lang button,.btn,.scale label,.chips label,.yn label,.opts label,.seg button,.pt{transition:background-color var(--dur),border-color var(--dur),box-shadow var(--dur),color var(--dur)}}
@@ -401,6 +404,17 @@ footer p{margin:0 0 var(--sp-2)}
 </main>
 
 <footer>
+  <details id="mesDonnees">
+    <summary>Tes données dans cette démo</summary>
+    <p>Brouillon d'information à faire relire. Ce n'est pas une politique de confidentialité et cela ne remplace pas l'avis d'un juriste.</p>
+    <ul>
+      <li>Ce qui est enregistré : ton journal, tes réponses aux questionnaires, ton plan de sécurité et tes réglages (langue, thème, dernier onglet ouvert).</li>
+      <li>Où : seulement dans ce navigateur, sur cet appareil (<code>localStorage</code>). Nafas n'utilise pas de cookie et n'envoie rien à un serveur.</li>
+      <li>Hébergement : le site est servi par GitHub Pages. GitHub peut enregistrer des informations techniques sur les visites, comme l'adresse IP (non vérifié).</li>
+      <li>Utilise seulement des données inventées.</li>
+    </ul>
+    <button class="btn ghost small" type="button" id="wipe">Effacer mes données</button> <span class="toast" id="wipeMsg" role="status"></span>
+  </details>
   <p>Contact : <a href="mailto:rayanemoutaki1@gmail.com">rayanemoutaki1@gmail.com</a> · Retours bienvenus.</p>
   <p><strong>Prototype V1.</strong> Tes saisies restent dans ce navigateur, rien n'est envoyé. Ne pas utiliser avec de vrais patients : une version réelle exige une autorisation préalable de la CNDP (loi 09-08, données de santé) et un hébergement au Maroc.</p>
   <p>Les ressources de crise et leur disponibilité doivent être vérifiées localement avant le pilote. Le 0801 000 180 concerne les intoxications (Centre antipoison), pas une ligne d'écoute psychologique.</p>
@@ -667,7 +681,7 @@ function scoreChart(qs,{h=220,W=760}={}){
 }
 function spark(s){
   const W=90,H=28,n=s.length,x=i=>i*(W-4)/(n-1)+2,y=v=>2+(10-v)*(H-4)/9;
-  return`<svg class="spark" viewBox="0 0 ${W} ${H}"><path d="${s.map((e,i)=>(i?'L':'M')+x(i).toFixed(1)+','+y(e.mood).toFixed(1)).join('')}" fill="none" stroke="var(--accent)" stroke-width="1.6"/><circle cx="${x(n-1)}" cy="${y(s[n-1].mood)}" r="2.5" fill="var(--accent)"/></svg>`;
+  return`<svg class="spark" viewBox="0 0 ${W} ${H}" role="img" aria-label="Courbe d'humeur des ${n} derniers jours"><path d="${s.map((e,i)=>(i?'L':'M')+x(i).toFixed(1)+','+y(e.mood).toFixed(1)).join('')}" fill="none" stroke="var(--accent)" stroke-width="1.6"/><circle cx="${x(n-1)}" cy="${y(s[n-1].mood)}" r="2.5" fill="var(--accent)"/></svg>`;
 }
 
 /* ---------- report ---------- */
@@ -778,6 +792,12 @@ $('#nav').addEventListener('keydown',e=>{
   const rtl=$('#nav').dir==='rtl',n=tabBtns.length;
   let j={ArrowRight:rtl?i-1:i+1,ArrowLeft:rtl?i+1:i-1,Home:0,End:n-1}[e.key];if(j===undefined)return;
   e.preventDefault();j=(j+n)%n;tabBtns[j].focus();show(tabBtns[j].dataset.view);
+});
+/* Effacer mes données : supprime toutes les clés « nafas-… » de ce navigateur, après confirmation */
+$('#wipe').addEventListener('click',()=>{
+  if(!confirm("Effacer ton journal, tes questionnaires, ton plan de sécurité et tes réglages sur cet appareil ? C'est définitif."))return;
+  try{Object.keys(localStorage).filter(k=>k.startsWith('nafas-')).forEach(k=>localStorage.removeItem(k))}catch(e){$('#wipeMsg').textContent="L'effacement a échoué : efface les données du site dans les réglages du navigateur.";return}
+  location.reload();
 });
 function renderAll(){views[cur]()}
 applyLang();

@@ -23,7 +23,7 @@ Qui décide :
 
 | # | Point | État dans Nafas | À faire | Qui décide |
 |---|---|---|---|---|
-| 1 | Politique de confidentialité | Absente. Le pied de page a seulement un résumé en une phrase. | Pour la démo : décider s'il faut une page « Tes données » factuelle (ce qui est stocké, où, comment l'effacer). Pour une version réelle : texte rédigé ou validé par un juriste. | Juriste, Warren |
+| 1 | Politique de confidentialité | Absente. Depuis cette PR, un encadré factuel « Tes données dans cette démo » (pied de page) dit ce qui est stocké et où, marqué « brouillon à faire relire ». | Pour la démo : décider s'il faut une page « Tes données » factuelle (ce qui est stocké, où, comment l'effacer). Pour une version réelle : texte rédigé ou validé par un juriste. | Juriste, Warren |
 | 2 | Conditions d'utilisation | Absentes | Idem : rédaction par un juriste avant tout usage réel | Juriste |
 | 3 | Politique de remboursement | Sans objet : rien n'est payant | Aucun | — |
 | 4 | Politique de cookies | Pas de cookie, mais du `localStorage` | Demander si le `localStorage` exige une information ou un consentement au Maroc (**non vérifié**) | Juriste |
@@ -35,14 +35,14 @@ Qui décide :
 | 10 | Frais cachés | Sans objet | Aucun | — |
 | 11 | Faux avis | Aucun avis. Les patients de l'espace praticien sont fictifs. | Vérifier qu'ils sont clairement présentés comme fictifs | Warren |
 | 12 | Affirmations non prouvées | **À revoir** : voir la section 3 | Relecture des phrases listées | Clinicien, Warren |
-| 13 | Textes alternatifs (accessibilité) | Pas d'images. Les deux grands graphiques ont une description (`aria-label`). Les mini-courbes de l'espace praticien (fonction `spark`) n'en ont pas. | Petit correctif technique possible | Warren |
+| 13 | Textes alternatifs (accessibilité) | Pas d'images. Les graphiques et, depuis cette PR, les mini-courbes de l'espace praticien ont une description (`aria-label`). | Tester avec un lecteur d'écran | Warren |
 | 14 | Contraste des couleurs | Bon. Le texte le plus pâle en mode sombre atteint 5,35:1, au-dessus du seuil de 4,5:1 (critère WCAG AA). | Tester aussi le mode clair | Warren |
 | 15 | Navigation au clavier | Présente : lien « Aller au contenu », flèches entre les onglets (sens inversé en darija), contour de focus visible | Faire un test complet à la main | Warren |
 | 16 | Coordonnées du responsable | E-mail de contact dans le pied de page | Pour une version réelle : identité du responsable du traitement, à définir avec un juriste | Juriste, Warren |
 | 17 | Consentement pour les mineurs | Rien dans la démo. Question ouverte. | Âge minimum ? Accord des parents ? Parcours clinique différent ? | Juriste, Clinicien, Warren |
 | 18 | Lien de désinscription des e-mails | Sans objet : aucun e-mail envoyé | Aucun | — |
 | 19 | Licences des polices et images | Polices du téléphone uniquement, aucune image | Aucun | — |
-| 20 | Demande de suppression des données | Pas de bouton « effacer mes données ». Il faut passer par les réglages du navigateur. | Déjà prévu : idée n° 1 de `docs/fonctionnalites.md` (« voir, exporter, effacer ») | Warren (pour la démo), Juriste (pour une version réelle) |
+| 20 | Demande de suppression des données | Depuis cette PR : bouton « Effacer mes données » dans l'encadré « Tes données dans cette démo » (pied de page), avec confirmation. L'export reste à faire (idée n° 1 de `docs/fonctionnalites.md`). | Pour une version réelle : procédure de suppression côté serveur, délais, preuves | Warren (pour la démo), Juriste (pour une version réelle) |
 
 ## 3. Phrases à faire relire (point 12)
 
