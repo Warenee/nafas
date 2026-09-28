@@ -101,7 +101,16 @@ fieldset.qi legend>span:nth-child(2){flex:1;min-width:0}
 .qmiss{flex-basis:100%;padding-inline-start:34px;color:var(--crit);font-weight:600;font-size:13px}
 fieldset.qi[data-missing] .opts label{border-color:var(--crit)}
 .save-note{margin:0;font-size:13px;color:var(--ink-3)}
-.crisis{background:var(--crit-soft);border:1px solid var(--crit);border-radius:12px;padding:var(--sp-4);color:var(--ink)}
+/* Mes données */
+.liste{margin:0;padding-inline-start:18px;display:grid;gap:var(--sp-1);font-size:14px}
+.confirm{background:var(--sunk);border-radius:var(--r-m);padding:var(--sp-4)}
+.confirm p{margin:0 0 var(--sp-3)}
+[tabindex="-1"]:focus{outline:none}
+/* Écran d'accueil « Comment ça marche » : sous le bandeau d'urgence, rien à valider pour utiliser l'app */
+.accueil{margin-top:var(--sp-3)}
+.accueil h2{font-size:20px}
+.accueil ul{margin:var(--sp-2) 0 var(--sp-4);padding-inline-start:18px;display:grid;gap:var(--sp-2);max-width:62ch}
+.crisis{background:var(--crit-soft);border:1px solid var(--crit);border-radius:12px;padding:16px;color:var(--ink)}
 .crisis strong{color:var(--crit)}
 .crisis ul{margin:var(--sp-2) 0 var(--sp-3);padding-inline-start:18px;display:grid;gap:var(--sp-1)}
 .crisis .note{color:var(--ink-2)}
@@ -186,7 +195,7 @@ footer details ul{margin:var(--sp-2) 0 var(--sp-3);padding-inline-start:var(--sp
 /* Mouvement doux, seulement si la personne ne l'a pas désactivé. L'encadré de crise apparaît sans animation. */
 @media (prefers-reduced-motion:no-preference){nav.tabs button,.lang button,.btn,.scale label,.chips label,.yn label,.opts label,.seg button,.pt{transition:background-color var(--dur),border-color var(--dur),box-shadow var(--dur),color var(--dur)}}
 /* Cibles tactiles d'au moins 44 px sur écran tactile */
-@media (pointer:coarse){.lang button,.btn.small,.chips label,.yn label,.seg button,nav.tabs button{min-height:var(--tap);display:inline-flex;align-items:center;justify-content:center}.seg button{flex-direction:column}}
+@media (pointer:coarse){.lang button,.btn,.chips label,.yn label,.seg button,nav.tabs button{min-height:var(--tap);display:inline-flex;align-items:center;justify-content:center}.seg button{flex-direction:column}}
 @media (max-width:480px){.panel{padding:var(--sp-4)}h2{font-size:22px}}
 @media (max-width:480px){.kpis{grid-template-columns:1fr 1fr}.scale label{height:36px;font-size:13px}.opts{padding-inline-start:0}}
 @media (pointer:coarse){.scale label{height:var(--tap)}}
@@ -215,6 +224,16 @@ footer details ul{margin:var(--sp-2) 0 var(--sp-3);padding-inline-start:var(--sp
 
 <div class="disc" id="disc"><span data-i18n="disc">Nafas n'est pas un service d'urgence et ton praticien ne lit pas tes réponses en continu. En danger maintenant :</span> <b>15</b> · <b>19</b> · <b>112</b> <span>(<span data-i18n="c_112">depuis un mobile</span>)</span></div>
 <div class="danote" id="daNote" hidden>الترجمة للدارجة هنا مثال، خاصها تتصادق من عند مختصين. الاستبيانات (PHQ-9…) باقيين بالفرنسية حتى تكون نسخة بالدارجة مصادق عليها علميا.</div>
+
+<section class="panel accueil" id="accueil" tabindex="-1" aria-labelledby="accueilT" hidden>
+  <h2 id="accueilT">Comment ça marche</h2>
+  <ul>
+    <li><strong>Ce qui est enregistré :</strong> tes réponses (journal, questionnaires, plan de sécurité) restent dans ce navigateur, sur cet appareil. Rien n'est envoyé.</li>
+    <li><strong>Qui les voit :</strong> dans cette démo, aucun praticien. L'« Espace praticien » montre des patients fictifs. Utilise seulement des données inventées.</li>
+    <li><strong>Ce que Nafas ne fait pas :</strong> pas de diagnostic, aucune alerte envoyée. Ce n'est pas un service d'urgence : les numéros sont dans le bandeau en haut de la page.</li>
+  </ul>
+  <button class="btn" type="button" id="accueilOk">J'ai compris</button>
+</section>
 
 <nav class="tabs" role="tablist" id="nav">
   <button role="tab" id="tab-jour" aria-selected="true" data-view="jour"><span data-i18n="t_jour">Aujourd'hui</span></button>
@@ -364,6 +383,7 @@ footer details ul{margin:var(--sp-2) 0 var(--sp-3);padding-inline-start:var(--sp
 <section id="view-hist" hidden>
   <h2>Mon suivi</h2>
   <p class="sub">Les 30 jours précédents sont un exemple généré pour la démonstration. Tes propres saisies s'ajoutent à la fin.</p>
+  <p style="margin:0 0 var(--sp-4)"><button class="btn ghost small" type="button" data-donnees>Mes données : voir, télécharger, effacer</button></p>
   <div class="panel stack">
     <h3 style="margin:0">Scores hebdomadaires</h3>
     <div class="chart" id="scoreChart"></div>
@@ -378,6 +398,17 @@ footer details ul{margin:var(--sp-2) 0 var(--sp-3);padding-inline-start:var(--sp
   <div class="panel" style="margin-top:16px">
     <h3>Journal</h3>
     <div class="tbl"><table><thead><tr><th>Date</th><th>Humeur</th><th>Anxiété</th><th>Sommeil</th><th>Traitement</th><th>Note</th></tr></thead><tbody id="journal"></tbody></table></div>
+  </div>
+  <div class="panel stack" id="donnees" tabindex="-1" style="margin-top:16px">
+    <h3 style="margin:0">Mes données</h3>
+    <p style="margin:0;color:var(--ink-2);font-size:14px">Voici tout ce que Nafas a enregistré dans ce navigateur, sur cet appareil. Rien n'est envoyé. Les 30 jours d'exemple ne sont pas enregistrés : ils sont recréés à chaque ouverture.</p>
+    <ul class="liste" id="donneesListe"></ul>
+    <div class="row"><button class="btn ghost" type="button" id="exportBtn">Télécharger (fichier JSON)</button><button class="btn ghost" type="button" id="effacerBtn">Tout effacer</button></div>
+    <p class="hint" style="margin:0">Le fichier téléchargé contient tes réponses : garde-le pour toi.</p>
+    <div class="confirm" id="effacerConfirm" tabindex="-1" hidden>
+      <p><strong>Tout effacer ?</strong> <span id="effacerPerte"></span></p>
+      <div class="row"><button class="btn ghost" type="button" id="effacerExport">Télécharger d'abord</button><button class="btn" type="button" id="effacerOui">Oui, tout effacer</button><button class="btn ghost" type="button" id="effacerNon">Annuler</button></div>
+    </div>
   </div>
 </section>
 
@@ -404,17 +435,7 @@ footer details ul{margin:var(--sp-2) 0 var(--sp-3);padding-inline-start:var(--sp
 </main>
 
 <footer>
-  <details id="mesDonnees">
-    <summary>Tes données dans cette démo</summary>
-    <p>Brouillon d'information à faire relire. Ce n'est pas une politique de confidentialité et cela ne remplace pas l'avis d'un juriste.</p>
-    <ul>
-      <li>Ce qui est enregistré : ton journal, tes réponses aux questionnaires, ton plan de sécurité et tes réglages (langue, thème, dernier onglet ouvert).</li>
-      <li>Où : seulement dans ce navigateur, sur cet appareil (<code>localStorage</code>). Nafas n'utilise pas de cookie et n'envoie rien à un serveur.</li>
-      <li>Hébergement : le site est servi par GitHub Pages. GitHub peut enregistrer des informations techniques sur les visites, comme l'adresse IP (non vérifié).</li>
-      <li>Utilise seulement des données inventées.</li>
-    </ul>
-    <button class="btn ghost small" type="button" id="wipe">Effacer mes données</button> <span class="toast" id="wipeMsg" role="status"></span>
-  </details>
+  <p class="row"><button class="btn ghost small" type="button" data-donnees>Mes données</button><button class="btn ghost small" type="button" id="accueilLien">Comment ça marche</button></p>
   <p>Contact : <a href="mailto:rayanemoutaki1@gmail.com">rayanemoutaki1@gmail.com</a> · Retours bienvenus.</p>
   <p><strong>Prototype V1.</strong> Tes saisies restent dans ce navigateur, rien n'est envoyé. Ne pas utiliser avec de vrais patients : une version réelle exige une autorisation préalable de la CNDP (loi 09-08, données de santé) et un hébergement au Maroc.</p>
   <p>Les ressources de crise et leur disponibilité doivent être vérifiées localement avant le pilote. Le 0801 000 180 concerne les intoxications (Centre antipoison), pas une ligne d'écoute psychologique.</p>
@@ -423,6 +444,9 @@ footer details ul{margin:var(--sp-2) 0 var(--sp-3);padding-inline-start:var(--sp
 
 <script>
 (function(){
+/* Espace praticien : pastille grise « Dernière saisie il y a N jours » à partir de ce nombre de jours sans saisie.
+   À valider par un clinicien. */
+const JOURS_SANS_SAISIE=3;
 const $=s=>document.querySelector(s);
 const DAY=86400000;
 const fmt=d=>new Date(d).toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'});
@@ -728,6 +752,7 @@ function renderPlanV(){renderPlanStatus()}
 function renderHist(){
   const s=mySeries();$('#scoreChart').innerHTML=scoreChart(myQ());kpis($('#kpis30'),s.slice(-30),null);$('#chart30').innerHTML=chart(s.slice(-31));
   $('#journal').innerHTML=s.slice().reverse().map(e=>`<tr><td>${fmt(e.date)}${e.demo?'':' <span class="pill good">toi</span>'}</td><td class="n">${esc(e.mood)}</td><td class="n">${esc(e.anx)}</td><td class="n">${f1(e.sleep)} h</td><td>${e.med==='oui'?'Pris':e.med==='non'?'<span class="pill crit">Non pris</span>':'—'}</td><td>${e.risk==='oui'?'<span class="pill crit">Idées noires</span> ':''}${esc(e.note||e.tags.join(', '))}</td></tr>`).join('');
+  renderDonnees();
 }
 const ME={id:'me',name:'Vous (démo)',ini:'V',age:'19 ans',motif:'Anxiété, sommeil',get s(){return mySeries()},get q(){return myQ()},get plan(){return loadPlan()}};
 function renderRapport(){$('#reportTxt').textContent=reportText(ME)}
@@ -737,8 +762,52 @@ $('#copyBtn').addEventListener('click',()=>{
   try{navigator.clipboard.writeText(t).then(done,fb)}catch(e){fb()}
 });
 
+/* ---------- mes données : voir, télécharger, effacer ---------- */
+/* Seules les clés « nafas-… » sont touchées : l'adresse warenee.github.io est partagée avec d'autres sites. */
+const nafasKeys=()=>{try{return Object.keys(localStorage).filter(k=>k.startsWith('nafas-')).sort()}catch(e){return[]}};
+const DONNEES={
+  'nafas-entries':['Journal',v=>`${v.length} jour(s) saisi(s)`],
+  'nafas-q':['Questionnaires',v=>`${v.length} réponse(s)`],
+  'nafas-plan':['Plan de sécurité',v=>`enregistré le ${fmt(v.date)}`],
+  'nafas-lang':['Réglage : langue',v=>v==='da'?'darija':'français'],
+  'nafas-theme':['Réglage : thème',v=>({auto:'Auto',light:'Clair',dark:'Sombre'})[v]||v],
+  'nafas-accueil':['Écran « Comment ça marche »',()=>'déjà lu'],
+  'nafas-revu':['Espace praticien (démo) : patients marqués comme revus',v=>`${Object.keys(v).length}`],
+  'nafas-tab':['Réglage : dernier onglet ouvert',v=>($('#tab-'+v+' [data-i18n]')||{}).textContent||v],
+};
+function decrire(k){const [lab,f]=DONNEES[k]||[k,()=>'présent'];let d;try{d=f(load(k,null))}catch(e){d='présent'}return[lab,d]}
+function renderDonnees(){
+  const ks=nafasKeys();
+  $('#donneesListe').innerHTML=ks.length?ks.map(k=>{const [l,d]=decrire(k);return`<li><strong>${esc(l)}</strong> : ${esc(d)}</li>`}).join(''):'<li>Rien n\'est enregistré pour l\'instant.</li>';
+}
+function exporter(){
+  const d={};nafasKeys().forEach(k=>d[k]=load(k,null));
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify({app:'Nafas (démo)',exporte_le:new Date().toISOString(),donnees:d},null,2)],{type:'application/json'}));
+  a.download=`nafas-mes-donnees-${iso(Date.now())}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+document.querySelectorAll('[data-donnees]').forEach(b=>b.onclick=()=>{show('hist');$('#donnees').scrollIntoView();$('#donnees').focus()});
+$('#exportBtn').onclick=exporter;
+
+/* ---------- écran d'accueil « Comment ça marche » ---------- */
+$('#accueil').hidden=load('nafas-accueil',false)===true;
+$('#accueilOk').onclick=()=>{store('nafas-accueil',true);$('#accueil').hidden=true;$('#main').focus()};
+$('#accueilLien').onclick=()=>{$('#accueil').hidden=false;$('#accueil').scrollIntoView();$('#accueil').focus()};
+$('#effacerExport').onclick=exporter;
+$('#effacerBtn').onclick=()=>{
+  const ks=nafasKeys();
+  $('#effacerPerte').textContent=ks.length?`Seront effacés de ce navigateur, sans retour possible : ${ks.map(k=>decrire(k)[0].toLowerCase()).join(', ')}.${ks.includes('nafas-plan')?' Ton plan de sécurité sera perdu : télécharge tes données ou recopie-le avant.':''}`:'Rien n\'est enregistré pour l\'instant.';
+  $('#effacerConfirm').hidden=false;$('#effacerConfirm').focus();
+};
+$('#effacerNon').onclick=()=>{$('#effacerConfirm').hidden=true;$('#effacerBtn').focus()};
+$('#effacerOui').onclick=()=>{
+  nafasKeys().forEach(k=>{try{localStorage.removeItem(k)}catch(e){}});
+  if(nafasKeys().length){$('#effacerPerte').textContent='Impossible d\'effacer : ce navigateur bloque l\'accès aux données.';return}
+  location.reload();
+};
+
 /* ---------- praticien ---------- */
-const Ys=makeSeries(21,5,-1.5,{dip:3,risk:1}),Os=makeSeries(33,6,0,{nomed:.3}),Ss=makeSeries(45,4,3),Hs=makeSeries(58,6.5,-2.6);
+const Ys=makeSeries(21,5,-1.5,{dip:3,risk:1}),Os=makeSeries(33,6,0,{nomed:.3}),Ss=makeSeries(45,4,3).slice(0,-5),Hs=makeSeries(58,6.5,-2.6);
 const PATIENTS=[ME,
   {id:'y',name:'Yasmine B.',ini:'YB',age:'24 ans',motif:'Épisode dépressif, sous ISRS',s:Ys,q:makeWeekly(Ys,5,{days:[28,21,14,2],item9:1}),plan:{f:{r:'x','1':'x','2':'x','3':'x','4':'x','5':'x','6':'x'},date:iso(Date.now()-20*DAY)}},
   {id:'o',name:'Omar T.',ini:'OT',age:'31 ans',motif:'Trouble bipolaire type II',s:Os,q:makeWeekly(Os,9),plan:null},
@@ -756,18 +825,23 @@ function status(p){
   return{cls:'good',t:'Stable',rank:4};
 }
 let sel=null;
+/* Fait brut, sans jugement : pas de couleur d'alerte, affiché seulement côté praticien. */
+function sansSaisie(p){const n=Math.round((Date.parse(iso(Date.now()))-Date.parse(p.s[p.s.length-1].date))/DAY);return n>=JOURS_SANS_SAISIE?`<span class="pill mute">Dernière saisie il y a ${n} jours</span>`:''}
+/* « Revu le … » : date où le praticien a consulté la fiche. Stocké dans ce navigateur, patients fictifs, rien côté patient. */
+const revuLe=id=>load('nafas-revu',{})[id];
 function lastScore(p,t){const l=byType(p.q,t).at(-1);return l?qScore(l):'—'}
 function renderPro(){
   const list=PATIENTS.map(p=>({p,st:status(p)})).sort((a,b)=>a.st.rank-b.st.rank);
   if(!sel)sel=list[0].p.id;
-  $('#patients').innerHTML=list.map(({p,st})=>`<button class="pt" data-id="${p.id}" data-st="${st.cls}" aria-pressed="${p.id===sel}"><span class="av">${p.ini}</span><span><strong>${p.name}</strong><span class="sc">PHQ ${lastScore(p,'phq')} · GAD ${lastScore(p,'gad')}</span><div class="meta">${p.motif}</div><span class="pill ${st.cls}">${st.t}</span></span>${spark(p.s.slice(-14))}</button>`).join('');
+  $('#patients').innerHTML=list.map(({p,st})=>`<button class="pt" data-id="${p.id}" data-st="${st.cls}" aria-pressed="${p.id===sel}"><span class="av">${p.ini}</span><span><strong>${p.name}</strong><span class="sc">PHQ ${lastScore(p,'phq')} · GAD ${lastScore(p,'gad')}</span><div class="meta">${p.motif}</div><span class="pill ${st.cls}">${st.t}</span> ${sansSaisie(p)}${revuLe(p.id)?`<div class="meta">Revu le ${fmtS(revuLe(p.id))}</div>`:''}</span>${spark(p.s.slice(-14))}</button>`).join('');
   document.querySelectorAll('.pt').forEach(b=>b.onclick=()=>{sel=b.dataset.id;renderPro()});
   const p=PATIENTS.find(x=>x.id===sel),st=status(p),last=p.s[p.s.length-1],pf=planFilled(p.plan);
   const chip=t=>{const v=lastScore(p,t);if(v==='—')return'';const [lab,c]=sev(t,v);return`<span class="pill ${c}">${QDEF[t].name} ${v} · ${lab}</span>`};
   $('#ptDetail').innerHTML=`<h3>${p.name} <span style="color:var(--ink-3);font-size:14px">· ${p.age}</span></h3>
   <p style="margin:0 0 10px;color:var(--ink-2);font-size:14px">${p.motif} · dernière saisie ${fmt(last.date)}</p>
-  <div class="row" style="gap:6px;margin-bottom:12px"><span class="pill ${st.cls}">${st.t}</span>${chip('phq')}${chip('gad')}${chip('who')}<span class="pill ${p.plan?(pf>=6?'good':'warn'):'mute'}">Plan de sécurité : ${p.plan?pf+'/7':'absent'}</span></div>
+  <div class="row" style="gap:6px;margin-bottom:12px"><span class="pill ${st.cls}">${st.t}</span>${sansSaisie(p)}${chip('phq')}${chip('gad')}${chip('who')}<span class="pill ${p.plan?(pf>=6?'good':'warn'):'mute'}">Plan de sécurité : ${p.plan?pf+'/7':'absent'}</span></div>
   ${st.rank===0?`<div class="crisis" style="margin-bottom:12px"><strong>Action attendue :</strong> contacter le patient aujourd'hui selon le protocole convenu, et revoir son plan de sécurité. Dans la vraie version : notification au praticien et trace de la prise en charge.</div>`:''}
+  <div class="row" style="margin-bottom:12px"><button class="btn ghost small" type="button" id="revuBtn">Marquer comme revu</button><span class="hint">${revuLe(p.id)?`Revu le ${fmt(revuLe(p.id))}`:'Pas encore revu'}</span></div>
   ${!p.plan?`<p class="note" style="margin:0 0 12px">Pas de plan de sécurité : à construire à la prochaine séance.</p>`:''}
   <h3 style="font-size:15px;margin-top:4px">Scores hebdomadaires</h3>
   <div class="chart">${scoreChart(p.q,{h:200,W:480})}</div>
@@ -776,6 +850,7 @@ function renderPro(){
   <div class="chart">${chart(p.s.slice(-14),{h:220,W:480})}</div>
   <div class="report" style="margin-top:12px;max-height:260px">${esc(reportText(p))}</div>`;
   kpis($('#ptK'),p.s.slice(-7),p.s.slice(-14,-7));
+  $('#revuBtn').onclick=()=>{const r=load('nafas-revu',{});r[p.id]=iso(Date.now());if(!store('nafas-revu',r)){$('#revuBtn').nextElementSibling.textContent=SAVE_FAIL;return}renderPro();$('#revuBtn').focus()};
 }
 
 /* ---------- tabs ---------- */
